@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "remote_sensing_tools"
+version = "0.0.1"
+authors = [
+  { name="Caitlin Adams", email="cadams@frontiersi.com.au" },
+]
+description = "Tools for remote sensing analysis"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "https://github.com/frontiersi/remote-sensing-tools"
+Issues = "https://github.com/frontiersi/remote-sensing-tools/issues"
