@@ -1,10 +1,10 @@
-name: frontiersibase
+name: remotesensingtools
 channels:
   - conda-forge
   - defaults
 dependencies:
   # Python
-  - python=3.10.13
+  - python=3.9.19
   - pip
   # Formatting and Linters
   - black
@@ -21,10 +21,12 @@ dependencies:
   - geopandas # this will include gdal through conda-forge
   - shapely
   - rasterio
+  - xarray
   # Data Science
   - matplotlib
   - numpy
   - pandas
-  - scikit-learn
-  - scipy
   # Project-Specific Packages 
+  - pystac-client
+  - odc-stac
+  - odc-geo
