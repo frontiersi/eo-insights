@@ -1,0 +1,12 @@
+{
+    // Linting and Formatting
+    "editor.formatOnSave": true,
+    // Auto save files
+    "files.autoSave": "afterDelay",
+    // Git settings
+    "git.autofetch": true,
+    // Python extension editor
+    "[python]": {
+        "editor.formatOnType": true
+    },
+}

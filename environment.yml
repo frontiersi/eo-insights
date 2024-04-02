@@ -1,0 +1,30 @@
+name: frontiersibase
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Python
+  - python=3.10.13
+  - pip
+  # Formatting and Linters
+  - black
+  - mypy
+  - pylint
+  # Jupyter Notebooks
+  - ipykernel
+  - ipython
+  # Utilities
+  - click
+  - tqdm
+  # Spatial
+  - fiona
+  - geopandas # this will include gdal through conda-forge
+  - shapely
+  - rasterio
+  # Data Science
+  - matplotlib
+  - numpy
+  - pandas
+  - scikit-learn
+  - scipy
+  # Project-Specific Packages 
