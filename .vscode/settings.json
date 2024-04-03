@@ -1,8 +1,10 @@
 {
     // Linting and Formatting
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
+    "notebook.formatOnSave.enabled": true,
     // Auto save files
-    "files.autoSave": "afterDelay",
+    "files.autoSave": "off",
     // Git settings
     "git.autofetch": true,
     // Python extension editor
