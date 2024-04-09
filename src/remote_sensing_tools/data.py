@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import odc.stac
 import pystac_client
+import tomli
 
 
 @dataclass
@@ -26,24 +27,24 @@ class EOData:
     def __init__(self, load_info: LoadInfo) -> None:
         self.load_info = load_info
 
-    def load_from_stac(self, catalog_url, collections, stac_config, aws_endpoint):
+    def load_from_stac(self, config_file, product):
         """Method to load from STAC catalog"""
 
+        # Load the configuration.toml file
+        with open(config_file, mode="rb") as f:
+            config = tomli.load(f)
+
         # Connect to catalog
-        catalog = pystac_client.Client.open(catalog_url)
+        catalog = pystac_client.Client.open(config["stac"]["catalog_url"])
 
         # Configure rasterio to connect to AWS. This is required for DE Africa
         # but may not be required for other catalogs
-        odc.stac.configure_rio(
-            cloud_defaults=True,
-            aws={"aws_unsigned": True},
-            AWS_S3_ENDPOINT=aws_endpoint,
-        )
+        odc.stac.configure_rio(**config["stac"]["rio_config"])
 
         # Search the catalog using the bounding box and start/end dates from the load info
         query = catalog.search(
             bbox=self.load_info.bbox,
-            collections=collections,
+            collections=[config["stac"]["configured_products"][product]],
             datetime=f"{self.load_info.start_date}/{self.load_info.end_date}",
         )
 
@@ -59,7 +60,7 @@ class EOData:
             groupby="solar_day",
             chunks={},
             bbox=self.load_info.bbox,
-            stac_cfg=stac_config,
+            stac_cfg=config,
         )
 
         return ds
