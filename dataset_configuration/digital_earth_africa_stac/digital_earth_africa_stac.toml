@@ -13,7 +13,7 @@ AWS_S3_ENDPOINT = "s3.af-south-1.amazonaws.com"
 # Sentinel-2 Product Definition
 [s2_l2a]
 
-[s2_l2a.mask]
+[s2_l2a.pixel_quality_mask]
 band = "SCL"
 type = "categorical"
 categories_to_mask = ["cloud high probability", "cloud medium probability", "thin cirrus", "cloud shadows", "saturated or defective"]
