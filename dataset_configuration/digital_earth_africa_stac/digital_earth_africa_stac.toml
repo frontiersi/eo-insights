@@ -13,15 +13,15 @@ AWS_S3_ENDPOINT = "s3.af-south-1.amazonaws.com"
 # Sentinel-2 Product Definition
 [s2_l2a]
 
-[s2_l2a.pixel_quality_mask]
+[s2_l2a.pq_mask]
 band = "SCL"
 type = "categorical"
 categories_to_mask = ["cloud high probability", "cloud medium probability", "thin cirrus", "cloud shadows", "saturated or defective"]
 
-[s2_l2a.mask.flags_definition]
+[s2_l2a.pq_mask.flags_definition]
 bits = [0, 1, 2, 3, 4, 5, 6, 7]
 
-[s2_l2a.mask.flags_definition.values]
+[s2_l2a.pq_mask.flags_definition.values]
 "no data" = 0
 "saturated or defective" = 1
 "dark area pixels" = 2
@@ -58,7 +58,7 @@ nir_narrow = "B08A"
 water_vapour = "B09"
 swir_1 = "B11"
 swir_2 = "B12"
-mask = "SCL"
+pq_mask = "SCL"
 aerosol_optical_thickness = "AOT"
 scene_average_water_vapour = "WVP"
 
