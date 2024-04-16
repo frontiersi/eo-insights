@@ -1,0 +1,61 @@
+# STAC Connection information
+[stac]
+catalog_url = "https://earth-search.aws.element84.com/v1/"
+
+[stac.rio_config]
+cloud_defaults = true
+aws = { aws_unsigned = true }
+AWS_S3_ENDPOINT = "s3.us-west-2.amazonaws.com"
+
+[stac.configured_products]
+"Sentinel 2" = "sentinel-2-l2a"
+
+# Sentinel-2 Product Definition
+[sentinel-2-l2a]
+
+[sentinel-2-l2a.pixel_quality_mask]
+band = "SCL"
+type = "categorical"
+categories_to_mask = ["cloud high probability", "cloud medium probability", "thin cirrus", "cloud shadows", "saturated or defective"]
+
+[sentinel-2-l2a.mask.flags_definition]
+bits = [0, 1, 2, 3, 4, 5, 6, 7]
+
+[sentinel-2-l2a.mask.flags_definition.values]
+"no data" = 0
+"saturated or defective" = 1
+"dark area pixels" = 2
+"cloud shadows" = 3
+"vegetation" = 4
+"bare soils" = 5
+"water" = 6
+"unclassified" = 7
+"cloud medium probability" = 8
+"cloud high probability" = 9
+"thin cirrus" = 10
+"snow or ice" = 11
+
+[sentinel-2-l2a.assets."*"]
+data_type = "uint16"
+nodata = 0
+unit = "1"
+
+[sentinel-2-l2a.assets.SCL]
+data_type = "uint8"
+nodata = 0
+unit = "1"
+
+[sentinel-2-l2a.aliases]
+costal_aerosol = "coastal"
+blue = "blue"
+green = "green"
+red = "red"
+red_edge_1 = "rededge1"
+red_edge_2 = "rededge2"
+red_edge_3 = "rededge3"
+nir = "nir"
+nir_narrow = "nir08"
+water_vapour = "nir09"
+swir_1 = "swir16"
+swir_2 = "swir22"
+mask = "SCL"
