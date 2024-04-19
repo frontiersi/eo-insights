@@ -1,46 +1,83 @@
 """Construct a STAC config object"""
 
+from dataclasses import dataclass
+from typing import Union, Optional
+import pathlib
 import tomli
+
+PathType = Union[str, pathlib.Path]
+
+
+@dataclass
+class CatalogInfo:
+    """Data class for a STAC Catalog"""
+
+    name: str
+    url: str
+    rio_config: dict
+
+
+@dataclass
+class CollectionInfo:
+    """Data class for a STAC Collection"""
+
+    id: str
+    description: str
+    aliases: dict
+    assets: dict
+    masks: dict
 
 
 class STACConfig:
     """STAC config class"""
 
-    def __init__(self, config_file_path=None) -> None:
-        if config_file_path is not None:
-            self.config_dictionary = self.config_dictionary_from_toml(config_file_path)
-            self.stac_settings = self.config_dictionary.get("stac", {})
-            self.catalog_url = self.stac_settings.get("catalog_url")
-            self.rio_config = self.stac_settings.get("rio_config")
-            self.products = self.stac_settings.get("configured_products", {})
-        else:
-            self.config_dictionary = None
+    def __init__(
+        self,
+        config_file_path: PathType,
+        configuration: Optional[dict],
+        catalog: Optional[CatalogInfo],
+        collections: Optional[dict[str, CollectionInfo]],
+    ) -> None:
+        self.config_file_path = config_file_path
+        self.configuration = configuration
+        self.catalog = catalog
+        self.collections = collections
 
-    def config_dictionary_from_toml(self, config_file_path):
-        """Construct the configuration dictionary"""
+        if self.config_file_path is not None:
+            # Load in the whole configuration dictionary
+            self.configuration = self.config_dictionary_from_toml(self.config_file_path)
+
+            # Set up attributes for STAC Catalog settings
+            catalog_dict = self.configuration.get("catalog", {})
+            self.catalog = CatalogInfo(
+                name=catalog_dict.get("name", ""),
+                url=catalog_dict.get("url", ""),
+                rio_config=catalog_dict.get("rio_config", {}),
+            )
+
+            # Set up attributes for collections
+            collections_settings = self.configuration.get("collections", {})
+
+            self.collections = {}
+            for collection, settings in collections_settings.items():
+
+                self.collections[collection] = CollectionInfo(
+                    id=collection,
+                    description=settings.get("description", ""),
+                    aliases=settings.get("aliases", {}),
+                    assets=settings.get("assets", {}),
+                    masks=settings.get("masks", {}),
+                )
+
+    def __str__(self) -> str:
+        return f"Configuration constructed from {self.config_file_path}"
+
+    def __repr__(self) -> str:
+        return f"STACConfig('{self.config_file_path}, {self.configuration}, {self.catalog}, {self.collections}')"
+
+    def config_dictionary_from_toml(self, config_file_path) -> dict:
+        """Load the configuration dictionary from the TOML file"""
         with open(config_file_path, mode="rb") as f:
             config = tomli.load(f)
 
         return config
-
-    def get_product_dictionary(self, product):
-        """Extract configuration information for a single product"""
-
-        if product is not None:
-            product_dict = self.config_dictionary.get(product, {})
-        else:
-            product_dict = None
-
-        return product_dict
-
-    def get_pq_mask_dictionary(self, product):
-        """Extract masking information for a single product"""
-
-        product_dict = self.get_product_dictionary(product)
-
-        if product_dict is not None:
-            masking_dict = product_dict.get("pq_mask", {})
-        else:
-            masking_dict = None
-
-        return masking_dict

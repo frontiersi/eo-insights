@@ -129,7 +129,7 @@ class RasterBase:
     def from_stac_query(
         cls,
         configuration_file: Union[str, pathlib.Path],
-        product_code: str,
+        collections: list[str],
         query_params: QueryParams,
         load_params: LoadParams,
     ):
@@ -140,16 +140,16 @@ class RasterBase:
         """
 
         # Load data
-        config = STACConfig(configuration_file)
+        config = STACConfig(config_file_path=configuration_file)
 
-        catalog = open_stac_catalog(config.catalog_url)
+        catalog = open_stac_catalog(config.catalog.url)
 
-        apply_rio_config(config.rio_config)
+        apply_rio_config(config.catalog.rio_config)
 
         items = get_stac_items_from_query(
             catalog,
             bbox=query_params.bbox,
-            collections=[product_code],
+            collections=collections,
             start_date=query_params.start_date,
             end_date=query_params.end_date,
         )
@@ -160,20 +160,8 @@ class RasterBase:
             crs=load_params.crs,
             resolution=load_params.resolution,
             bbox=query_params.bbox,
-            config=config.config_dictionary,
+            config=config.configuration.get("collections"),
             chunks={},
-        )
-
-        pq_mask_dictionary = config.get_pq_mask_dictionary(product_code)
-
-        apply_pq_mask(
-            data=data,
-            masking_band="pq_mask",
-            category_value_dictionary=pq_mask_dictionary["flags_definition"]["values"],
-            categories_to_mask=pq_mask_dictionary["categories_to_mask"],
-            nodata_value=config.get_product_dictionary(product_code)["assets"]["*"][
-                "nodata"
-            ],
         )
 
         return cls(data)
