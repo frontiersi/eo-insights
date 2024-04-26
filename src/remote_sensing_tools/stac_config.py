@@ -1,7 +1,7 @@
 """Construct a STAC config object"""
 
 from dataclasses import dataclass
-from typing import Union, Optional
+from typing import Union, Any
 import pathlib
 import tomli
 
@@ -31,53 +31,48 @@ class CollectionInfo:
 class STACConfig:
     """STAC config class"""
 
-    def __init__(
-        self,
-        config_file_path: PathType,
-        configuration: Optional[dict],
-        catalog: Optional[CatalogInfo],
-        collections: Optional[dict[str, CollectionInfo]],
-    ) -> None:
-        self.config_file_path = config_file_path
+    def __init__(self, configuration: dict[Any, Any]) -> None:
         self.configuration = configuration
-        self.catalog = catalog
-        self.collections = collections
 
-        if self.config_file_path is not None:
-            # Load in the whole configuration dictionary
-            self.configuration = self.config_dictionary_from_toml(self.config_file_path)
+    @property
+    def catalog(self) -> CatalogInfo:
+        """Set up attributes for STAC Catalog settings"""
+        catalog_dict = self.configuration.get("catalog", {})
+        catalog = CatalogInfo(
+            name=catalog_dict.get("name", ""),
+            url=catalog_dict.get("url", ""),
+            rio_config=catalog_dict.get("rio_config", {}),
+        )
+        return catalog
 
-            # Set up attributes for STAC Catalog settings
-            catalog_dict = self.configuration.get("catalog", {})
-            self.catalog = CatalogInfo(
-                name=catalog_dict.get("name", ""),
-                url=catalog_dict.get("url", ""),
-                rio_config=catalog_dict.get("rio_config", {}),
+    @property
+    def collections(self) -> dict[Any, CollectionInfo]:
+        """Set up attributes for STAC Collections settings"""
+        collections_settings = self.configuration.get("collections", {})
+
+        collections = {}
+        for collection, settings in collections_settings.items():
+
+            collections[collection] = CollectionInfo(
+                id=collection,
+                description=settings.get("description", ""),
+                aliases=settings.get("aliases", {}),
+                assets=settings.get("assets", {}),
+                masks=settings.get("masks", {}),
             )
 
-            # Set up attributes for collections
-            collections_settings = self.configuration.get("collections", {})
-
-            self.collections = {}
-            for collection, settings in collections_settings.items():
-
-                self.collections[collection] = CollectionInfo(
-                    id=collection,
-                    description=settings.get("description", ""),
-                    aliases=settings.get("aliases", {}),
-                    assets=settings.get("assets", {}),
-                    masks=settings.get("masks", {}),
-                )
+        return collections
 
     def __str__(self) -> str:
-        return f"Configuration constructed from {self.config_file_path}"
+        return f"Configuration constructed from {self.configuration}"
 
     def __repr__(self) -> str:
-        return f"STACConfig('{self.config_file_path}, {self.configuration}, {self.catalog}, {self.collections}')"
+        return f"STACConfig('{self.configuration}')"
 
-    def config_dictionary_from_toml(self, config_file_path) -> dict:
-        """Load the configuration dictionary from the TOML file"""
-        with open(config_file_path, mode="rb") as f:
-            config = tomli.load(f)
 
-        return config
+def stac_config_from_toml(config_file_path) -> dict[Any, Any]:
+    """Load the configuration dictionary from the TOML file"""
+    with open(config_file_path, mode="rb") as f:
+        config = tomli.load(f)
+
+    return config
