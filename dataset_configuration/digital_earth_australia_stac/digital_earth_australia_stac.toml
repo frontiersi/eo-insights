@@ -74,7 +74,7 @@ bits = [0, 1, 2, 3, 4, 5, 6, 7]
 "water" = 5
 
 [ga_s2bm_ard_3.assets."*"]
-data_type = "uint16"
+data_type = "int16"
 nodata = -999
 unit = "1"
 
