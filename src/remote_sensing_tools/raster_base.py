@@ -7,9 +7,11 @@ import odc.stac
 import pystac_client
 import xarray
 from remote_sensing_tools.stac_config import STACConfig
+from remote_sensing_tools.masking import set_mask_attributes
 
 # Construct types for type hinting
 BBox = tuple[float, float, float, float]
+XarrayType = Union[xarray.Dataset, xarray.DataArray]
 
 
 @dataclass
@@ -38,8 +40,13 @@ class LoadParams:
 class RasterBase:
     """Class for instantiating raster data"""
 
-    def __init__(self, data: Optional[xarray.Dataset] = None):
+    def __init__(
+        self,
+        data: Optional[XarrayType] = None,
+        masks: Optional[XarrayType] = None,
+    ):
         self.data = data
+        self.masks = masks
 
     @classmethod
     def from_stac_query(
@@ -81,4 +88,27 @@ class RasterBase:
             stac_cfg=config.configuration.get("collections", {}),
         )
 
-        return cls(data)
+        # Add masking attributes if a mask is present
+        # Identify whether any of the masks are present in the loaded data
+        requested_masks: list = []
+        for collection in collections:
+            collection_masks = config.masks.get(collection, {}).keys()
+            matched_masks = set(collection_masks).intersection(data.keys())
+
+            # For each mask, store the mask info as attribute
+            for mask in matched_masks:
+                data[mask] = set_mask_attributes(
+                    data[mask], config.masks.get(collection, {}).get(mask, None)
+                )
+
+            requested_masks.extend(matched_masks)
+
+        # Ensure unique aliases before proceeding
+        unique_masks = set(requested_masks)
+        if len(unique_masks) != 0:
+            masks = data[list(unique_masks)]
+            data = data.drop_vars(list(unique_masks))
+        else:
+            masks = None
+
+        return cls(data, masks)

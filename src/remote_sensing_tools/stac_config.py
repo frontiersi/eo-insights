@@ -28,6 +28,19 @@ class CollectionInfo:
     masks: dict
 
 
+@dataclass
+class MaskInfo:
+    """Data class for masking information from STAC config"""
+
+    id: str
+    alias: str
+    description: str
+    collection: str
+    type: str
+    categories_to_mask: list[str]
+    flags_definition: dict[str, Any]
+
+
 class STACConfig:
     """STAC config class"""
 
@@ -62,6 +75,41 @@ class STACConfig:
             )
 
         return collections
+
+    @property
+    def masks(self) -> dict[str, dict[str, MaskInfo]]:
+        """Set up dictionary of masks from STAC config"""
+
+        # First find all products with masks
+        collections_with_masks = [
+            collection
+            for collection, settings in self.collections.items()
+            if settings.masks
+        ]
+
+        masks = {}
+
+        # For each collection, loop over all masks and convert from dict to MaskInfo
+        for collection in collections_with_masks:
+            collection_masks_dicts = self.collections[collection].masks
+
+            collection_masks = {}
+            for mask, settings in collection_masks_dicts.items():
+
+                alias = settings.get("alias", "")
+
+                collection_masks[alias] = MaskInfo(
+                    id=mask,
+                    alias=alias,
+                    description=settings.get("description", ""),
+                    collection=collection,
+                    type=settings.get("type", ""),
+                    categories_to_mask=settings.get("categories_to_mask", []),
+                    flags_definition=settings.get("flags_definition", {}),
+                )
+            masks[collection] = collection_masks
+
+        return masks
 
     def __str__(self) -> str:
         return f"Configuration constructed from {self.configuration}"

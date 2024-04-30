@@ -30,18 +30,22 @@ scl = "SCL"
 aerosol_optical_thickness = "AOT"
 scene_average_water_vapour = "WVP"
 
+# List default metadata attributes for all assets
 [collections.s2_l2a.assets."*"]
 data_type = "uint16"
 nodata = 0
 unit = "1"
 
+# Overwrite metadata for SCL
 [collections.s2_l2a.assets.SCL]
 data_type = "uint8"
 nodata = 0
 unit = "1"
 
+# Set up all s2_l2a masks
 [collections.s2_l2a.masks]
 
+# Set up SCL config
 [collections.s2_l2a.masks.SCL]
 alias = "scl"
 description = "Scene Classification Map"
