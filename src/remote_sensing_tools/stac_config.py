@@ -1,46 +1,126 @@
 """Construct a STAC config object"""
 
+from dataclasses import dataclass
+from typing import Union, Any
+import pathlib
 import tomli
+
+PathType = Union[str, pathlib.Path]
+
+
+@dataclass
+class CatalogInfo:
+    """Data class for a STAC Catalog"""
+
+    name: str
+    url: str
+    rio_config: dict
+
+
+@dataclass
+class CollectionInfo:
+    """Data class for a STAC Collection"""
+
+    id: str
+    description: str
+    aliases: dict
+    assets: dict
+    masks: dict
+
+
+@dataclass
+class MaskInfo:
+    """Data class for masking information from STAC config"""
+
+    id: str
+    alias: str
+    description: str
+    collection: str
+    type: str
+    categories_to_mask: list[str]
+    flags_definition: dict[str, Any]
 
 
 class STACConfig:
     """STAC config class"""
 
-    def __init__(self, config_file_path=None) -> None:
-        if config_file_path is not None:
-            self.config_dictionary = self.config_dictionary_from_toml(config_file_path)
-            self.stac_settings = self.config_dictionary.get("stac", {})
-            self.catalog_url = self.stac_settings.get("catalog_url")
-            self.rio_config = self.stac_settings.get("rio_config")
-            self.products = self.stac_settings.get("configured_products", {})
-        else:
-            self.config_dictionary = None
+    def __init__(self, configuration: dict[Any, Any]) -> None:
+        self.configuration = configuration
 
-    def config_dictionary_from_toml(self, config_file_path):
-        """Construct the configuration dictionary"""
-        with open(config_file_path, mode="rb") as f:
-            config = tomli.load(f)
+    @property
+    def catalog(self) -> CatalogInfo:
+        """Set up attributes for STAC Catalog settings"""
+        catalog_dict = self.configuration.get("catalog", {})
+        catalog = CatalogInfo(
+            name=catalog_dict.get("name", ""),
+            url=catalog_dict.get("url", ""),
+            rio_config=catalog_dict.get("rio_config", {}),
+        )
+        return catalog
 
-        return config
+    @property
+    def collections(self) -> dict[Any, CollectionInfo]:
+        """Set up attributes for STAC Collections settings"""
+        collections_settings = self.configuration.get("collections", {})
 
-    def get_product_dictionary(self, product):
-        """Extract configuration information for a single product"""
+        collections = {}
+        for collection, settings in collections_settings.items():
 
-        if product is not None:
-            product_dict = self.config_dictionary.get(product, {})
-        else:
-            product_dict = None
+            collections[collection] = CollectionInfo(
+                id=collection,
+                description=settings.get("description", ""),
+                aliases=settings.get("aliases", {}),
+                assets=settings.get("assets", {}),
+                masks=settings.get("masks", {}),
+            )
 
-        return product_dict
+        return collections
 
-    def get_pq_mask_dictionary(self, product):
-        """Extract masking information for a single product"""
+    @property
+    def masks(self) -> dict[str, dict[str, MaskInfo]]:
+        """Set up dictionary of masks from STAC config"""
 
-        product_dict = self.get_product_dictionary(product)
+        # First find all products with masks
+        collections_with_masks = [
+            collection
+            for collection, settings in self.collections.items()
+            if settings.masks
+        ]
 
-        if product_dict is not None:
-            masking_dict = product_dict.get("pq_mask", {})
-        else:
-            masking_dict = None
+        masks = {}
 
-        return masking_dict
+        # For each collection, loop over all masks and convert from dict to MaskInfo
+        for collection in collections_with_masks:
+            collection_masks_dicts = self.collections[collection].masks
+
+            collection_masks = {}
+            for mask, settings in collection_masks_dicts.items():
+
+                alias = settings.get("alias", "")
+
+                collection_masks[alias] = MaskInfo(
+                    id=mask,
+                    alias=alias,
+                    description=settings.get("description", ""),
+                    collection=collection,
+                    type=settings.get("type", ""),
+                    categories_to_mask=settings.get("categories_to_mask", []),
+                    flags_definition=settings.get("flags_definition", {}),
+                )
+            masks[collection] = collection_masks
+
+        return masks
+
+    def __str__(self) -> str:
+        return f"Configuration constructed from {self.configuration}"
+
+    def __repr__(self) -> str:
+        return f"STACConfig('{self.configuration}')"
+
+
+def stac_config_from_toml(config_file_path) -> dict[Any, Any]:
+    """Load the configuration dictionary from the TOML file"""
+    with open(config_file_path, mode="rb") as f:
+        config = tomli.load(f)
+
+    return config

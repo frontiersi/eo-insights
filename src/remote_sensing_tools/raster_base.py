@@ -1,18 +1,17 @@
 """Data loading"""
 
 from dataclasses import dataclass
-from typing import TypeVar, Union
-import pathlib
+from typing import Union, Optional
 
 import odc.stac
 import pystac_client
 import xarray
 from remote_sensing_tools.stac_config import STACConfig
+from remote_sensing_tools.masking import set_mask_attributes
 
 # Construct types for type hinting
-XarrayObject = Union[xarray.DataArray, xarray.Dataset]
-XarrayTypeVar = TypeVar("XarrayTypeVar", xarray.DataArray, xarray.Dataset)
 BBox = tuple[float, float, float, float]
+XarrayType = Union[xarray.Dataset, xarray.DataArray]
 
 
 @dataclass
@@ -38,142 +37,78 @@ class LoadParams:
     bands: Union[tuple, list]
 
 
-def open_stac_catalog(catalog_url: str) -> pystac_client.client.Client:
-    """Connect to a stac catalog and return the client used to access"""
-
-    # Connect to catalog
-    catalog = pystac_client.Client.open(catalog_url)
-
-    return catalog
-
-
-def apply_rio_config(rio_config: dict) -> None:
-    """Apply the rio config for odc-stac"""
-    odc.stac.configure_rio(**rio_config)
-
-
-def get_stac_items_from_query(
-    catalog: pystac_client.client.Client,
-    bbox: BBox,
-    collections: list,
-    start_date: str,
-    end_date: str,
-) -> list:
-    """Return STAC items for a given query"""
-
-    query = catalog.search(
-        bbox=bbox,
-        collections=collections,
-        datetime=f"{start_date}/{end_date}",
-    )
-
-    # Search the STAC catalog for all items matching the query
-    items = list(query.items())
-
-    return items
-
-
-def load_stac_items(
-    items: list,
-    bands: Union[tuple, list],
-    crs: str,
-    resolution: int,
-    bbox: BBox,
-    config: dict,
-    chunks: dict,
-) -> XarrayObject:
-    """Load STAC items into an xarry datset or dataarray"""
-    ds = odc.stac.load(
-        items,
-        bands=bands,
-        crs=crs,
-        resolution=resolution,
-        groupby="solar_day",
-        chunks=chunks,
-        bbox=bbox,
-        stac_cfg=config,
-    )
-
-    return ds
-
-
-def apply_pq_mask(
-    data: XarrayObject,
-    masking_band: str,
-    category_value_dictionary: dict,
-    categories_to_mask: list,
-    nodata_value: Union[float, int],
-) -> None:
-    """Apply the pixel quality mask"""
-
-    # Separate out the masking band and the data to be masked
-    mask_array = data[masking_band]
-    data.drop_vars([masking_band])
-
-    values_to_mask = [
-        category_value_dictionary[category] for category in categories_to_mask
-    ]
-
-    inclusion_mask = ~mask_array.isin(values_to_mask)
-
-    data.where(cond=inclusion_mask, other=nodata_value)
-
-
 class RasterBase:
     """Class for instantiating raster data"""
 
-    def __init__(self, data=None):
+    def __init__(
+        self,
+        data: Optional[XarrayType] = None,
+        masks: Optional[XarrayType] = None,
+    ):
         self.data = data
+        self.masks = masks
 
     @classmethod
     def from_stac_query(
         cls,
-        configuration_file: Union[str, pathlib.Path],
-        product_code: str,
+        config: STACConfig,
+        collections: list[str],
         query_params: QueryParams,
         load_params: LoadParams,
     ):
         """
         Specific factory method for building from stac query
-        This returns a lazy-loaded xarray with masking applied, assuming
-        there is a pq_mask band present
+        This returns a lazy-loaded xarray
         """
 
-        # Load data
-        config = STACConfig(configuration_file)
+        # Connect to a stac catalog and return the client used to access
+        catalog = pystac_client.Client.open(config.catalog.url)
 
-        catalog = open_stac_catalog(config.catalog_url)
+        # Apply the rio config for odc-stac
+        odc.stac.configure_rio(**config.catalog.rio_config)
 
-        apply_rio_config(config.rio_config)
-
-        items = get_stac_items_from_query(
-            catalog,
+        # Run the STAC query
+        query = catalog.search(
             bbox=query_params.bbox,
-            collections=[product_code],
-            start_date=query_params.start_date,
-            end_date=query_params.end_date,
+            collections=collections,
+            datetime=f"{query_params.start_date}/{query_params.end_date}",
         )
 
-        data = load_stac_items(
+        # List items returned by the query
+        items = list(query.items())
+
+        data = odc.stac.load(
             items,
             bands=load_params.bands,
             crs=load_params.crs,
             resolution=load_params.resolution,
             bbox=query_params.bbox,
-            config=config.config_dictionary,
             chunks={},
+            groupby="solar_day",
+            stac_cfg=config.configuration.get("collections", {}),
         )
 
-        pq_mask_dictionary = config.get_pq_mask_dictionary(product_code)
+        # Add masking attributes if a mask is present
+        # Identify whether any of the masks are present in the loaded data
+        requested_masks: list = []
+        for collection in collections:
+            collection_masks = config.masks.get(collection, {}).keys()
+            matched_masks = set(collection_masks).intersection(data.keys())
 
-        apply_pq_mask(
-            data=data,
-            masking_band="pq_mask",
-            category_value_dictionary=pq_mask_dictionary["flags_definition"]["values"],
-            categories_to_mask=pq_mask_dictionary["categories_to_mask"],
-            nodata_value=config.get_product_dictionary(product_code)["assets"]["*"][
-                "nodata"
-            ],
-        )
+            # For each mask, store the mask info as attribute
+            for mask in matched_masks:
+                data[mask] = set_mask_attributes(
+                    data[mask], config.masks.get(collection, {}).get(mask, None)
+                )
 
-        return cls(data)
+            requested_masks.extend(matched_masks)
+
+        # Ensure unique aliases before proceeding
+        unique_masks = set(requested_masks)
+        if len(unique_masks) != 0:
+            masks = data[list(unique_masks)]
+            data = data.drop_vars(list(unique_masks))
+        else:
+            masks = None
+
+        return cls(data, masks)
