@@ -1,0 +1,64 @@
+# STAC Connection information
+[catalog]
+name = "Element 84"
+catalog_url = "https://earth-search.aws.element84.com/v1/"
+
+[catalog.rio_config]
+cloud_defaults = true
+aws = { aws_unsigned = true }
+AWS_S3_ENDPOINT = "s3.us-west-2.amazonaws.com"
+
+# Sentinel-2 Product Definition
+[collections.sentinel-2-l2a]
+description = "sentinel-2-l2a"
+
+# Band aliases 
+[collections.sentinel-2-l2a.aliases]
+costal_aerosol = "coastal"
+blue = "blue"
+green = "green"
+red = "red"
+red_edge_1 = "rededge1"
+red_edge_2 = "rededge2"
+red_edge_3 = "rededge3"
+nir = "nir"
+nir_narrow = "nir08"
+water_vapour = "nir09"
+swir_1 = "swir16"
+swir_2 = "swir22"
+pq_mask = "scl"
+
+# List default metadata attributes for all assets
+[collections.sentinel-2-l2a.assets."*"]
+data_type = "uint16"
+nodata = 0
+unit = "1"
+
+# Overwrite metadata for scl
+[collections.sentinel-2-l2a.assets.scl]
+data_type = "uint8"
+nodata = 0
+unit = "1"
+
+# Set up all sentinel-2-l2a masks
+[collections.sentinel-2-l2a.masks.scl]
+alias = "pq_mask"
+description = "Scene Classification Map"
+type = "categorical"
+categories_to_mask = ["cloud high probability", "cloud medium probability", "thin cirrus", "cloud shadows", "saturated or defective"]
+flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
+
+# Set up scl config 
+[collections.sentinel-2-l2a.masks.scl.flags_definition.values]
+"no data" = 0
+"saturated or defective" = 1
+"dark area pixels" = 2
+"cloud shadows" = 3
+"vegetation" = 4
+"bare soils" = 5
+"water" = 6
+"unclassified" = 7
+"cloud medium probability" = 8
+"cloud high probability" = 9
+"thin cirrus" = 10
+"snow or ice" = 11
