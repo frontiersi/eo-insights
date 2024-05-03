@@ -62,7 +62,8 @@ flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 [collections.ga_s2bm_ard_3]
 description = "Sentinel-2b"
 
-# Band aliases 
+# Band aliases
+[collections.ga_s2bm_ard_3.aliases]
 costal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
