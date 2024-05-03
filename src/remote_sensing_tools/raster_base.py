@@ -20,7 +20,6 @@ class QueryParams:
     Information required for querying a stac catalog
     """
 
-    product: str
     bbox: BBox
     start_date: str
     end_date: str
