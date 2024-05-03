@@ -1,18 +1,20 @@
 """Functionality for managing data masks"""
 
-from typing import Union, Optional
+import logging
+
 import xarray
 from remote_sensing_tools.stac_config import MaskInfo
 
-XarrayType = Union[xarray.Dataset, xarray.DataArray]
+# Set up the logger
+_log = logging.getLogger(__name__)
 
 
 def set_mask_attributes(
-    mask: xarray.DataArray, mask_info: Optional[MaskInfo]
+    mask: xarray.DataArray, mask_info: MaskInfo
 ) -> xarray.DataArray:
     """Attach information in MaskInfo to xarray.DataArray attribute"""
 
-    if (mask_info is not None) and (mask.name == mask_info.alias):
+    if mask.name == mask_info.alias:
         mask.attrs.update(
             collection=mask_info.collection,
             type=mask_info.type,
@@ -20,7 +22,10 @@ def set_mask_attributes(
             flags_definition=mask_info.flags_definition,
         )
     else:
-        # TODO: Replace with log statement
-        print("mask did not match with mask info")
+        _log.error(
+            "Mask band %s did not match provided MaskInfo %s",
+            mask.name,
+            mask_info.alias,
+        )
 
     return mask
