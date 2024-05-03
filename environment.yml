@@ -30,3 +30,4 @@ dependencies:
   - pystac-client
   - odc-stac
   - odc-geo
+  - matplotlib
