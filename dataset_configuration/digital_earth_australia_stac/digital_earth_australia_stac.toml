@@ -1,7 +1,7 @@
 # STAC Connection information
-[stac]
+[catalog]
 name = "Digital Earth Australia"
-catalog_url = "https://explorer.sandbox.dea.ga.gov.au/stac"
+url = "https://explorer.sandbox.dea.ga.gov.au/stac"
 
 [catalog.rio_config]
 cloud_defaults = true
@@ -25,7 +25,7 @@ nir = "nbart_nir_1"
 nir_narrow = "nbart_nir_2"
 swir_1 = "nbart_swir_2"
 swir_2 = "nbart_swir_3"
-pq_mask = "oa_fmask"
+fmask = "oa_fmask"
 
 # List default metadata attributes for all assets
 [collections.ga_s2am_ard_3.assets."*"]
@@ -44,8 +44,8 @@ unit = "1"
 
 # Set up oa_fmask config
 [collections.ga_s2am_ard_3.masks.oa_fmask]
-alias = "pq_mask"
-description = ""
+alias = "fmask"
+description = "Function of mask"
 type = "categorical"
 categories_to_mask = ["cloud", "shadow", "snow", "water"]
 flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
@@ -66,7 +66,7 @@ description = "Sentinel-2b"
 costal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
-red = "	nbart_red"
+red = "nbart_red"
 red_edge_1 = "nbart_red_edge_1"
 red_edge_2 = "nbart_red_edge_2"
 red_edge_3 = "nbart_red_edge_3"
@@ -74,7 +74,7 @@ nir = "nbart_nir_1"
 nir_narrow = "nbart_nir_2"
 swir_1 = "nbart_swir_2"
 swir_2 = "nbart_swir_3"
-pq_mask = "oa_fmask"
+fmask = "oa_fmask"
 
 # List default metadata attributes for all assets 
 [collections.ga_s2bm_ard_3.assets."*"]
@@ -93,13 +93,13 @@ unit = "1"
 
 # Set up oa_fmask config
 [collections.ga_s2bm_ard_3.masks.oa_fmask]
-alias = "pq_mask"
-description = ""
+alias = "fmask"
+description = "Function of mask"
 type = "categorical"
 categories_to_mask = ["cloud", "shadow", "snow", "water"]
 flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 
-[collections.ga_s2bm_ard_3.masks.pq_mask.flags_definition.values]
+[collections.ga_s2bm_ard_3.masks.oa_fmask.flags_definition.values]
 "no data" = 0
 "valid" = 1
 "cloud" = 2
