@@ -1,10 +1,15 @@
 """Functionality for managing data masks"""
 
+import logging
+
 from typing import Union, Optional
 import xarray
 from remote_sensing_tools.stac_config import MaskInfo
 
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
+
+# Set up the logger
+_log = logging.getLogger(__name__)
 
 
 def set_mask_attributes(
@@ -20,7 +25,10 @@ def set_mask_attributes(
             flags_definition=mask_info.flags_definition,
         )
     else:
-        # TODO: Replace with log statement
-        print("mask did not match with mask info")
+        _log.error(
+            "Mask band %s did not match provided MaskInfo %s",
+            mask.name,
+            mask_info.alias,
+        )
 
     return mask

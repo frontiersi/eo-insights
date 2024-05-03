@@ -1,5 +1,7 @@
 """Data loading"""
 
+import logging
+
 from dataclasses import dataclass
 from typing import Union, Optional
 
@@ -12,6 +14,9 @@ from remote_sensing_tools.masking import set_mask_attributes
 # Construct types for type hinting
 BBox = tuple[float, float, float, float]
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
+
+# Set up the logger
+_log = logging.getLogger(__name__)
 
 
 @dataclass

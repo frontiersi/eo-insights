@@ -1,11 +1,16 @@
 """Construct a STAC config object"""
 
+import logging
+
 from dataclasses import dataclass
 from typing import Union, Any
 import pathlib
 import tomli
 
 PathType = Union[str, pathlib.Path]
+
+# Set up the logger
+_log = logging.getLogger(__name__)
 
 
 @dataclass
