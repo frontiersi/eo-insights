@@ -8,7 +8,7 @@ from typing import Union, Optional
 import odc.stac
 import pystac_client
 import xarray
-from remote_sensing_tools.stac_config import STACConfig
+from remote_sensing_tools.stac import STACConfig
 from remote_sensing_tools.masking import set_mask_attributes
 
 # Construct types for type hinting
