@@ -52,6 +52,14 @@ class STACConfig:
     def __init__(self, configuration: dict[Any, Any]) -> None:
         self.configuration = configuration
 
+    @classmethod
+    def from_toml(cls, configuration_toml_path: PathType):
+        """Load the configuration from a TOML file"""
+        with open(configuration_toml_path, mode="rb") as f:
+            config_dict = tomli.load(f)
+
+        return cls(config_dict)
+
     @property
     def catalog(self) -> CatalogInfo:
         """Set up attributes for STAC Catalog settings"""
@@ -121,11 +129,3 @@ class STACConfig:
 
     def __repr__(self) -> str:
         return f"STACConfig('{self.configuration}')"
-
-
-def stac_config_from_toml(config_file_path) -> dict[Any, Any]:
-    """Load the configuration dictionary from the TOML file"""
-    with open(config_file_path, mode="rb") as f:
-        config = tomli.load(f)
-
-    return config
