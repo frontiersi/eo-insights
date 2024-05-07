@@ -8,7 +8,7 @@ from typing import Union, Optional
 import odc.stac
 import pystac_client
 import xarray
-from remote_sensing_tools.stac import STACConfig
+from remote_sensing_tools.stac_utils import STACConfig
 from remote_sensing_tools.masking import set_mask_attributes
 
 # Construct types for type hinting
@@ -95,17 +95,17 @@ class RasterBase:
         # Add masking attributes if a mask is present
         # Identify whether any of the masks are present in the loaded data
         requested_masks: list = []
-        for collection in collections:
-            collection_masks = config.masks.get(collection, {}).keys()
-            matched_masks = set(collection_masks).intersection(data.keys())
+        # for collection in collections:
+        #     collection_masks = config.masks.get(collection, {}).keys()
+        #     matched_masks = set(collection_masks).intersection(data.keys())
 
-            # For each mask, store the mask info as attribute
-            for mask in matched_masks:
-                data[mask] = set_mask_attributes(
-                    data[mask], config.masks.get(collection, {}).get(mask, None)
-                )
+        #     # For each mask, store the mask info as attribute
+        #     for mask in matched_masks:
+        #         data[mask] = set_mask_attributes(
+        #             data[mask], config.masks.get(collection, {}).get(mask, None)
+        #         )
 
-            requested_masks.extend(matched_masks)
+        #     requested_masks.extend(matched_masks)
 
         # Ensure unique aliases before proceeding
         unique_masks = set(requested_masks)

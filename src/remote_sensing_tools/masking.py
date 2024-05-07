@@ -2,7 +2,7 @@
 
 from typing import Union, Optional
 import xarray
-from remote_sensing_tools.stac import MaskInfo
+from remote_sensing_tools.stac_utils import MaskInfo
 
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
 
@@ -15,7 +15,7 @@ def set_mask_attributes(
     if (mask_info is not None) and (mask.name == mask_info.alias):
         mask.attrs.update(
             collection=mask_info.collection,
-            type=mask_info.type,
+            mask_type=mask_info.mask_type,
             categories_to_mask=mask_info.categories_to_mask,
             flags_definition=mask_info.flags_definition,
         )

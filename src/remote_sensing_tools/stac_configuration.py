@@ -4,7 +4,7 @@ import logging
 
 from pathlib import Path
 
-from remote_sensing_tools.stac import STACConfig
+from remote_sensing_tools.stac_utils import STACConfig
 
 _log = logging.getLogger(__name__)
 
