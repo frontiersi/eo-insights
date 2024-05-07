@@ -68,8 +68,10 @@ def _get_collection_info(collection_id: str, collection_config: dict) -> Collect
     # Process mask information for the collection
     masks_config = collection_config.get("masks", {})
 
-    masks_list = {
-        mask_id: _get_mask_info(collection_id, mask_id, mask_info)
+    masks = {
+        mask_info.get("alias", mask_id): _get_mask_info(
+            collection_id, mask_id, mask_info
+        )
         for mask_id, mask_info in masks_config.items()
     }
 
@@ -78,7 +80,7 @@ def _get_collection_info(collection_id: str, collection_config: dict) -> Collect
         description=collection_config.get("description", ""),
         aliases=collection_config.get("aliases", {}),
         assets=collection_config.get("assets", {}),
-        masks=masks_list,
+        masks=masks,
     )
 
     return collection
