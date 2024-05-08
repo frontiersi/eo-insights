@@ -18,3 +18,9 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/frontiersi/remote-sensing-tools"
 Issues = "https://github.com/frontiersi/remote-sensing-tools/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+remote_sensing_tools = ["py.typed"]
