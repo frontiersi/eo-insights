@@ -8,7 +8,7 @@ from typing import Union, Optional
 import odc.stac
 import pystac_client
 import xarray
-from remote_sensing_tools.stac_utils import STACConfig, CollectionInfo
+from remote_sensing_tools.stac_utils import STACConfig
 from remote_sensing_tools.masking import set_mask_attributes
 
 # Construct types for type hinting
@@ -97,21 +97,22 @@ class RasterBase:
         requested_masks: list = []
         for requested_collection_name in collections:
 
-            collection_info = config.collections.get(requested_collection_name, None)
+            configured_masks = config.get_collection_masks(requested_collection_name)
 
-            if collection_info is not None:
-                configured_masks = collection_info.masks
+            if len(configured_masks) > 0:
 
-                configured_mask_aliases = [
-                    mask_info.alias for _, mask_info in configured_masks.items()
-                ]
-
-                matched_masks = set(configured_mask_aliases).intersection(data.keys())
+                matched_masks = set(configured_masks.keys()).intersection(data.keys())
 
                 for mask in matched_masks:
                     data[mask] = set_mask_attributes(data[mask], configured_masks[mask])
 
                 requested_masks.extend(matched_masks)
+
+            else:
+                _log.warning(
+                    "There were no configured masks found for %s",
+                    requested_collection_name,
+                )
 
         # Ensure unique aliases before proceeding
         unique_masks = set(requested_masks)
@@ -120,5 +121,6 @@ class RasterBase:
             data = data.drop_vars(list(unique_masks))
         else:
             masks = None
+            _log.info("No masks were found for the requested collections")
 
         return cls(data, masks)

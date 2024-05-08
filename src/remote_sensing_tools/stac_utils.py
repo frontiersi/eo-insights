@@ -128,6 +128,22 @@ class STACConfig:
         for collection_name, collection_info in self.collections.items():
             _log.info("%s - %s", collection_name, collection_info.description)
 
+    def get_collection_masks(self, collection_id: str) -> dict[str, MaskInfo]:
+        """Get a dictionary of alias: MaskInfo for all masks available in a collection"""
+        collection_info = self.collections.get(collection_id, None)
+
+        if collection_info is not None:
+            masks = collection_info.masks
+
+            mask_aliases = {
+                mask_info.alias: mask_info for _, mask_info in masks.items()
+            }
+        else:
+            mask_aliases = {}
+            _log.error("No collection information was found for %s", collection_id)
+
+        return mask_aliases
+
     def __str__(self) -> str:
         return f"Configuration constructed from {self.configuration}"
 
