@@ -1,5 +1,26 @@
 def calculate_indices(ds, index):
+    """
+    Parameters
+    ----------
+    ds: xarray Dataset
+        A two-dimensional or multi-dimensional array containing the
+        spectral bands required to calculate the index. These bands are
+        used as inputs to calculated the selected index.
+    index: str or list of strs
+        A string giving the name of the index to calculate or a list of
+        strings giving the names of the indices to calculate:
 
+        * ``'MSAVI'`` (Modified Soil Adjusted Vegetation Index)
+        * ``'BAEI'`` (Built-up Area Extraction Index)
+        * ``'BSI'`` (Bare Soil Index)
+        * ``'NDWI'`` (Normalised Difference Water Index)
+
+    Returns
+    -------
+    ds: xarray Dataset
+        The original xarray Dataset inputted into the function, with a
+        new variable containing the remote sensing index as a DataArray.
+    """
     # Dictionary containing remote sensing index band indices
     index_dict = {
         # Modified Soil Adjusted Vegetation Index (MSAVI)
