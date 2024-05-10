@@ -19,7 +19,6 @@ def calculate_indices(ds, index):
         * ``'NDCI'`` (Normalised Difference Chlorophyll Index)
         * ``'NDVI'`` (Normalised Difference Vegetation Index)
         * ``'NDWI'`` (Normalised Difference Water Index)
-
     Returns
     -------
     ds: xarray Dataset
