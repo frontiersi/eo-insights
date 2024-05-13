@@ -1,4 +1,18 @@
-def calculate_indices(ds, index):
+"""
+Calculating band indices from remote sensing data (NDVI, NDWI etc).
+"""
+
+from typing import Callable, Union, Iterable, Literal
+import xarray
+
+IndexName = Literal[
+    "baei", "bsi", "evi", "mndwi", "msavi", "nbr", "ndci", "ndvi", "ndwi"
+]
+
+
+def calculate_indices(
+    ds: xarray.Dataset, index: Union[IndexName, Iterable[IndexName]]
+) -> xarray.Dataset:
     """
     Parameters
     ----------
@@ -26,7 +40,7 @@ def calculate_indices(ds, index):
         new variable containing the remote sensing index as a DataArray.
     """
     # Dictionary containing remote sensing index band indices
-    index_dict = {
+    index_dict: dict[IndexName, Callable[[xarray.Dataset], xarray.DataArray]] = {
         #
         # Built-up Area Extraction Index (BAEI)
         "baei": lambda ds: (ds.red + 0.3) / (ds.green + ds.swir_1),
@@ -56,21 +70,21 @@ def calculate_indices(ds, index):
 
     # If index supplied is not a list, convert to list. This allows us to
     # iterate through either multiple or single indices in the loop below
-    indices = index if isinstance(index, list) else [index]
+    indices = [index] if isinstance(index, str) else index
 
     # Calculate for each index in the list of indices supplied (indexes)
-    for index in indices:
+    for band_index in indices:
 
         # Select an index function from the dictionary
-        index_func = index_dict.get(str(index))
+        index_func = index_dict.get(band_index)
 
-        if index is None:
-            raise ValueError(f"No remote sensing `index` was provided.")
+        if index_func is None:
+            raise ValueError(f"Requested index: `{band_index}` was not recognised.")
 
         # TODO: apply normalisation when dealing with dataset with scale
         index_array = index_func(ds)
 
-        output_band_name = index
+        output_band_name = band_index
         ds[output_band_name] = index_array
 
     return ds
