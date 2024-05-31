@@ -9,7 +9,7 @@ import odc.stac
 import pystac_client
 import xarray
 from remote_sensing_tools.stac_utils import STACConfig
-from remote_sensing_tools.masking import set_mask_attributes, generate_categorical_mask
+from remote_sensing_tools.masking import set_mask_attributes, convert_mask_to_bool
 
 # Construct types for type hinting
 BBox = tuple[float, float, float, float]
@@ -46,8 +46,8 @@ class RasterBase:
 
     def __init__(
         self,
-        data: Optional[XarrayType] = None,
-        masks: Optional[XarrayType] = None,
+        data: Optional[xarray.Dataset] = None,
+        masks: Optional[xarray.Dataset] = None,
     ):
         self.data = data
         self.masks = masks
@@ -126,92 +126,81 @@ class RasterBase:
         return cls(data, masks)
 
     def generate_boolean_mask(self, mask_name: str, inplace: bool = True):
-        """For a given mask, create the relevant boolean mask"""
+        """
+        For a given mask, create the relevant boolean mask
 
-        if self.masks is not None:
-            try:
-                # Ignoring type error because str is both hashable and iterable of hashable
-                # https://github.com/pydata/xarray/blob/cd3ab8d5580eeb3639d38e1e884d2d9838ef6aa1/xarray/core/dataset.py#L1552
-                mask: xarray.DataArray = self.masks[mask_name]  # type: ignore
-            except KeyError as e:
-                raise KeyError(
-                    f"Mask '{mask_name}' was not recognised. Available masks are {list(self.masks.data_vars)}"
-                ) from e
+        Parameters
+        ----------
+        mask_name : str
+            Name of the mask.
+        inplace : bool, optional
+            Whether to modify the mask inplace, by default True.
+            If False, a new variable will be created with mask_name followed by _bool.
+        """
+
+        if self.masks is None:
+            _log.warning(
+                "The mask attribute for this %s is None. No mask can be generated",
+                type(self),
+            )
         else:
-            raise ValueError(
-                f"The mask attribute for this {type(self)} is None. There is no mask to be applied."
+            boolean_mask = convert_mask_to_bool(
+                masks_array=self.masks, mask_name=mask_name
             )
 
-        # Determine the mask type from the mask attributes
-        mask_type = mask.attrs.get("mask_type")
-
-        # If the user is doing this inplace, the boolean mask will overwrite the original mask
-        if inplace:
-            destination = mask_name
-        else:
-            destination = f"{mask_name}_bool"
-
-        if mask_type is not None:
-            if mask_type == "categorical":
-                mask_categories = mask.attrs.get("categories_to_mask")
-                if mask_categories is None:
-                    raise ValueError(
-                        f"{mask_name} has no categories to mask. Check metadata for categories to mask."
-                    )
-                mask_flags_definition = mask.attrs.get("flags_definition")
-                if mask_flags_definition is not None:
-                    mask_category_values = mask_flags_definition.get("values")
-                else:
-                    raise ValueError(
-                        f"{mask_name} has no flag definitions. Check metadata for mask."
-                    )
-
-                _log.info(
-                    "Selecting all pixels belonging to any of %s", mask_categories
-                )
-
-                self.masks[destination] = generate_categorical_mask(
-                    mask=mask,
-                    categories=mask_categories,
-                    category_values=mask_category_values,
-                )
-            elif mask_type == "boolean":
-                _log.info("Using boolean mask as is.")
+            # If the user is doing this inplace, the boolean mask will overwrite the original mask
+            if inplace:
+                destination = mask_name
             else:
-                raise NotImplementedError(
-                    f"{mask_name} has mask type {mask_type}, but no generation strategies exist for this type. Valid mask types are ['categorical', 'boolean']"
-                )
-        else:
-            raise ValueError(
-                "No mask type was found. Ensure {mask_name} has a valid 'mask_type' attribute."
-            )
+                destination = f"{mask_name}_bool"
+
+            self.masks[destination] = boolean_mask
 
     def apply_mask(
         self, mask_name: str, data_inplace: bool = True, mask_inplace: bool = True
     ):
         """
-        For a given mask, if it's a boolean, apply to data. If not, create the boolean mask
-        If data_inplace=True, the masked variables will overwrite the unmasked variables.
-        If data_inplace=False, the masked variables wiil be assigned to {variable}_masked.
+        For a given mask, if it's a boolean, apply to data.
+        If not, create the boolean mask using generate_boolean_mask, then apply.
+
+        Parameters
+        ----------
+        mask_name : str
+            _description_
+        data_inplace : bool, optional
+            _description_, by default True
+        mask_inplace : bool, optional
+            _description_, by default True
+
+        Raises
+        ------
+        ValueError
+            If `self.data` is `None`
+        ValueError
+            If `self.masks` is `None`
+        KeyError
+            If `self.masks` has no data variable `mask_name`
+
         """
         if self.data is None:
             raise ValueError(
-                "The data attribute for this {type(self)} is None. There is no data to apply the mask to."
+                f"The data attribute for this {type(self)} is None."
+                "There is no data to apply the mask to."
             )
 
-        if self.masks is not None:
+        if self.masks is None:
+            raise ValueError(
+                f"The mask attribute for this {type(self)} is None."
+                "There is no mask to be applied."
+            )
+        else:
             try:
-                # Ignoring type error because str is both hashable and iterable of hashable
-                # https://github.com/pydata/xarray/blob/cd3ab8d5580eeb3639d38e1e884d2d9838ef6aa1/xarray/core/dataset.py#L1552
-                mask = self.masks[mask_name]  # type: ignore
+                mask = self.masks[mask_name]
             except KeyError as e:
                 raise KeyError(
-                    f"Mask '{mask_name}' was not recognised. Available masks are {list(self.masks.data_vars)}"
+                    f"Mask '{mask_name}' was not recognised."
+                    f"Available masks are {list(self.masks.data_vars)}."
                 ) from e
-        else:
-            raise ValueError(
-                f"The mask attribute for this {type(self)} is None. There is no mask to be applied."
-            )
 
         # If not dealing with a boolean mask, create the boolean version
         if mask.attrs.get("mask_type") != "boolean":
@@ -224,7 +213,9 @@ class RasterBase:
         inverted_mask = ~mask
 
         # Identify unmasked variables -- this is to ward against mutliple re-runs with inplace=False
-        unmasked_vars = [var for var in list(self.data.keys()) if "_masked" not in var]
+        unmasked_vars = [
+            var for var in list(self.masks.data_vars) if "_masked" not in var.name
+        ]
 
         # Apply the mask to each variable
         for variable in unmasked_vars:

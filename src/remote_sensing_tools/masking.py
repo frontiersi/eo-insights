@@ -43,3 +43,65 @@ def generate_categorical_mask(
     mask_bool.attrs.update(mask_type="boolean")
 
     return mask_bool
+
+
+def convert_mask_to_bool(
+    masks_array: xarray.Dataset, mask_name: str
+) -> xarray.DataArray:
+    """Convert a single mask_name from masks_array from its base type to a boolean"""
+
+    try:
+        mask = masks_array[mask_name]
+    except KeyError as e:
+        raise KeyError(
+            f"Mask band '{mask_name}' was not recognised."
+            f"Available masks are {list(masks_array.data_vars)}"
+        ) from e
+
+    # Determine the mask type from the mask attributes
+    mask_type = mask.attrs.get("mask_type")
+
+    if mask_type is not None:
+
+        # Convert categorical mask to boolean
+        if mask_type == "categorical":
+            # Get categories from metadata
+            mask_categories = mask.attrs.get("categories_to_mask")
+            if mask_categories is None:
+                raise ValueError(
+                    f"Mask band {mask.name} has no categories to mask."
+                    "Check metadata for categories to mask."
+                )
+
+            # Get flags definition values from metadata
+            mask_flags_definition = mask.attrs.get("flags_definition")
+            if mask_flags_definition is not None:
+                mask_category_values = mask_flags_definition.get("values")
+            else:
+                raise ValueError(
+                    f"Mask band {mask.name} has no flag definitions. Check metadata for mask."
+                )
+
+            _log.info("Converting categorical mask to boolean")
+            _log.info("Selecting all pixels belonging to any of %s", mask_categories)
+
+            masks_array_bool = generate_categorical_mask(
+                mask=mask,
+                categories=mask_categories,
+                category_values=mask_category_values,
+            )
+        elif mask_type == "boolean":
+            _log.info("Using boolean mask as is.")
+            masks_array_bool = mask
+        else:
+            raise NotImplementedError(
+                f"Mask band {mask.name} has mask type {mask_type},"
+                "but no conversion strategies exist for this type."
+                "Valid mask types are ['categorical', 'boolean']"
+            )
+    else:
+        raise ValueError(
+            f"No mask type was found. Ensure {mask.name} has a valid 'mask_type' attribute."
+        )
+
+    return masks_array_bool
