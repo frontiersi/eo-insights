@@ -1,11 +1,12 @@
 """Functionality for managing data masks"""
 
 import logging
-from typing import Union
+from typing import Union, Literal
 import xarray
 from remote_sensing_tools.stac_utils import MaskInfo
 
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
+MorphOperation = Literal["dilation", "erosion", "opening", "closing"]
 
 _log = logging.getLogger(__name__)
 
@@ -45,17 +46,15 @@ def generate_categorical_mask(
     return mask_bool
 
 
-def convert_mask_to_bool(
-    masks_array: xarray.Dataset, mask_name: str
-) -> xarray.DataArray:
-    """Convert a single mask_name from masks_array from its base type to a boolean"""
+def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.DataArray:
+    """Convert a single mask_name from masks_ds from its base type to a boolean"""
 
     try:
-        mask = masks_array[mask_name]
+        mask = masks_ds[mask_name]
     except KeyError as e:
         raise KeyError(
             f"Mask band '{mask_name}' was not recognised."
-            f"Available masks are {list(masks_array.data_vars)}"
+            f"Available masks are {list(masks_ds.data_vars)}"
         ) from e
 
     # Determine the mask type from the mask attributes
@@ -85,14 +84,14 @@ def convert_mask_to_bool(
             _log.info("Converting categorical mask to boolean")
             _log.info("Selecting all pixels belonging to any of %s", mask_categories)
 
-            masks_array_bool = generate_categorical_mask(
+            masks_ds_bool = generate_categorical_mask(
                 mask=mask,
                 categories=mask_categories,
                 category_values=mask_category_values,
             )
         elif mask_type == "boolean":
             _log.info("Using boolean mask as is.")
-            masks_array_bool = mask
+            masks_ds_bool = mask
         else:
             raise NotImplementedError(
                 f"Mask band {mask.name} has mask type {mask_type},"
@@ -104,4 +103,4 @@ def convert_mask_to_bool(
             f"No mask type was found. Ensure {mask.name} has a valid 'mask_type' attribute."
         )
 
-    return masks_array_bool
+    return masks_ds_bool
