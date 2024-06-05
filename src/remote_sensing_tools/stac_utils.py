@@ -5,7 +5,7 @@ import logging
 from dataclasses import dataclass
 from typing import Union, Any
 import pathlib
-import tomli
+import tomllib
 
 PathType = Union[str, pathlib.Path]
 
@@ -96,7 +96,7 @@ class STACConfig:
     def from_toml(cls, configuration_toml_path: PathType):
         """Load the configuration from a TOML file"""
         with open(configuration_toml_path, mode="rb") as f:
-            config_dict = tomli.load(f)
+            config_dict = tomllib.load(f)
 
         return cls(config_dict)
 

@@ -10,9 +10,20 @@ authors = [
 ]
 description = "Tools for remote sensing analysis"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+  "black>=24.4.2",
+  "dask[diagnostics]>=2024.5.2",
+  "ipykernel>=6.29.4",
+  "matplotlib>=3.9.0",
+  "mypy>=1.10.0",
+  "odc-stac>=0.3.9",
+  "pylint>=3.2.2",
+  "pystac-client>=0.8.2",
 ]
 
 [project.urls]

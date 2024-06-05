@@ -1,26 +1,28 @@
 # remote-sensing-tools
 
-## Conda Environment
+## Conda Environment with Pip
+This package uses the approach of creating a conda environment, then pip installing the module.
+Dependencies are listed in the `pyproject.toml` file.
 
 ### Set up
 ```
 cd remote-sensing-tools
-conda env create -f environment.yml
+conda create -n "remotesensingtools" python=3.11.0
 ```
 ### Activate
 ```
 conda activate remotesensingtools
 ```
 
-### Update
-```
-conda env update --file environment.yml --prune
-```
-
-## Install the package
-from the repository directory, run
+### Install the package
+After activating the conda envrionemnt, run
 ```
 pip install -e .
 ```
 
-## Experiment
+Note that this installs all required dependencies listed in the `pyproject.toml` file.
+
+### Deactivate
+```
+conda deactivate
+```
