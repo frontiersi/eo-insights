@@ -1,12 +1,25 @@
 """Functionality for managing data masks"""
 
+from functools import partial
 import logging
-from typing import Union, Literal
+from random import randint
+import typing
+from typing import Union, Literal, Iterable, Tuple, Callable, Optional
+
+import dask
+import dask_image.ndmorph  # type: ignore
+import skimage.morphology
+from skimage.morphology import disk
+import numpy as np
 import xarray
 from remote_sensing_tools.stac_utils import MaskInfo
 
+
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
 MorphOperation = Literal["dilation", "erosion", "opening", "closing"]
+MORPHOPERATIONS = typing.get_args(MorphOperation)
+
+MaskFilter = Tuple[MorphOperation, int]
 
 _log = logging.getLogger(__name__)
 
@@ -14,8 +27,26 @@ _log = logging.getLogger(__name__)
 def set_mask_attributes(
     mask: xarray.DataArray, mask_info: MaskInfo
 ) -> xarray.DataArray:
-    """Attach information in MaskInfo to xarray.DataArray attribute"""
+    """
+    Attach information in MaskInfo to xarray.DataArray attribute
 
+    Parameters
+    ----------
+    mask : xarray.DataArray
+        Data array from RasterBase.masks
+    mask_info : MaskInfo
+        MaskInfo dataclass containing metadata about the mask
+
+    Returns
+    -------
+    xarray.DataArray
+        Original mask with content of MaskInfo added to the attributes
+
+    Raises
+    ------
+    ValueError
+        `mask.name` does not equal `MaskInfo.alias`
+    """
     if mask.name == mask_info.alias:
         mask.attrs.update(
             collection=mask_info.collection,
@@ -34,7 +65,23 @@ def set_mask_attributes(
 def generate_categorical_mask(
     mask: xarray.DataArray, categories: list[str], category_values: dict[str, int]
 ) -> xarray.DataArray:
-    """Generate a categorical mask"""
+    """
+    Generate a categorical mask
+
+    Parameters
+    ----------
+    mask : xarray.DataArray
+        Data array from RasterBase.masks
+    categories : list[str]
+        Categories to mask. Pixels matching the category will return as True.
+    category_values : dict[str, int]
+        Dictionary matching the categories to their pixel values.
+
+    Returns
+    -------
+    xarray.DataArray
+        Boolean xarray where pixels matching the categories are True, all other pixels are False
+    """
 
     values = [category_values[category] for category in categories]
 
@@ -44,6 +91,277 @@ def generate_categorical_mask(
     mask_bool.attrs.update(mask_type="boolean")
 
     return mask_bool
+
+
+# Adapted from odc-algo
+# https://github.com/opendatacube/odc-algo/blob/f67879b1df951f4e1a3e3d52c13b244d1cb516a7/odc/algo/_masking.py#L337
+def _disk(radius: int, n_dimensions: int = 2) -> np.ndarray:
+    """
+    Wrapper for skimage.morphology.disk for use with multiple dimensional arrays
+
+    Parameters
+    ----------
+    radius : int
+        Radius for the disk
+    n_dimensions : int, optional
+        Number of dimensions in the array the disk will be applied to, by default 2
+
+    Returns
+    -------
+    np.ndarray
+        Disk kernel of radius, with necessary dimensions
+    """
+
+    kernel = disk(radius)
+    while kernel.ndim < n_dimensions:
+        kernel = kernel[np.newaxis]
+    return kernel
+
+
+def _add_random_token_to_string(prefix: str) -> str:
+    """
+    Append random token to name
+
+    Parameters
+    ----------
+    prefix : str
+        String to append random token to
+
+    Returns
+    -------
+    str
+        Updated string, with random token appended to prefix
+    """
+    return f"{prefix}-{randint(0, 0xFFFFFFFF):08x}"
+
+
+def _get_morph_operator(
+    operation: MorphOperation,
+    dask_enabled: bool,
+) -> Callable:
+    """
+    Select the correct morphological operations library from skimage or dask_image
+
+    Parameters
+    ----------
+    operation : MorphOperation
+        Morphological operation. Must be one of "dilation", "erosion", "opening", "closing"
+    is_dask_collection : bool
+        Whether the operation will be applied to a DaskCollection
+
+    Returns
+    -------
+    Callable
+        The appropriate morphological operation function.
+        If dask_enabled, the function comes from dask_image.ndmorph.
+        If not dask_enabled, the function comes from skimage.morphology.
+    """
+
+    dask_operators: dict[MorphOperation, Callable] = {
+        "dilation": dask_image.ndmorph.binary_dilation,
+        "erosion": dask_image.ndmorph.binary_erosion,
+        "opening": dask_image.ndmorph.binary_opening,
+        "closing": dask_image.ndmorph.binary_closing,
+    }
+
+    skimage_operators: dict[MorphOperation, Callable] = {
+        "dilation": skimage.morphology.binary_dilation,
+        "erosion": skimage.morphology.binary_erosion,
+        "opening": skimage.morphology.binary_opening,
+        "closing": skimage.morphology.binary_closing,
+    }
+
+    if dask_enabled:
+        morph_operator = dask_operators[operation]
+    else:
+        morph_operator = skimage_operators[operation]
+
+    return morph_operator
+
+
+def _apply_morph_operator_np(
+    mask: np.ndarray,
+    operation: MorphOperation,
+    radius: int,
+    dask_enabled: Optional[bool] = None,
+    **kw,
+) -> np.ndarray:
+    """
+    Apply a single morphological operator to a numpy ndarray
+
+    Parameters
+    ----------
+    mask : np.ndarray
+        Mask to apply the operation to
+    operation : MorphOperation
+        Morphological operation. Must be one of "dilation", "erosion", "opening", "closing"
+    radius : int
+        Radius (number of pixels) of the disk to use in the morphological operation.
+    dask_enabled : Optional[bool], optional
+        Optional override by the user, by default None
+
+    Returns
+    -------
+    np.ndarray
+        Mask after the operation has been applied.
+    """
+
+    # Default to the array's dask collection status unless overruled by the user
+    if dask_enabled is None:
+        dask_enabled = dask.is_dask_collection(mask)
+
+    morph_operator = _get_morph_operator(operation=operation, dask_enabled=dask_enabled)
+
+    kernel = _disk(radius, mask.ndim)
+    filtered_mask = morph_operator(mask, kernel, **kw)
+
+    return filtered_mask
+
+
+def apply_morph_operator(
+    mask_da: xarray.DataArray,
+    operation: MorphOperation,
+    radius: int,
+    **kw,
+) -> xarray.DataArray:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    mask_da : xarray.DataArray
+        Mask to apply the operation to
+    operation : MorphOperation
+        Morphological operation. Must be one of "dilation", "erosion", "opening", "closing"
+    radius : int
+        Radius (number of pixels) of the disk to use in the morphological operation.
+
+    Returns
+    -------
+    xarray.DataArray
+        Mask after the operation has been applied.
+    """
+
+    mask = mask_da.data
+
+    if operation not in MORPHOPERATIONS:
+        raise ValueError(
+            f"Requested morphological operation: `{operation}` was not recognised."
+            f"Valid operations are: {MORPHOPERATIONS}"
+        )
+
+    filtered_mask = _apply_morph_operator_np(
+        mask=mask, operation=operation, radius=radius, **kw
+    )
+
+    return xarray.DataArray(
+        data=filtered_mask,
+        coords=mask_da.coords,
+        dims=mask_da.dims,
+        attrs=mask_da.attrs,
+    )
+
+
+def _apply_morph_operators_np(
+    mask: np.ndarray, mask_filters: Iterable[MaskFilter], **kw
+) -> np.ndarray:
+    """
+    Apply a set of morphological operators to a numpy ndarray
+
+    Parameters
+    ----------
+    mask : np.ndarray
+        Mask to apply the operation to
+    mask_filters : Iterable[MaskFilter]
+        An iterable of tuples of the form (operation, radius),
+        where operation must be one of "dilation", "erosion", "opening", "closing"
+        and radius is the size of the disk to be used for the operation
+
+    Returns
+    -------
+    np.ndarray
+        Mask after all operations have been applied.
+    """
+
+    # dask_enabled is hard-coded to false for this function
+    # this is because this function can be used in apply_morph_operators,
+    # which has been designed to work with skimage.morphology functions
+    for operation, radius in mask_filters:
+        if radius > 0:
+            mask = _apply_morph_operator_np(
+                mask=mask, operation=operation, radius=radius, dask_enabled=False, **kw
+            )
+
+    return mask
+
+
+def _compute_overlap_depth(r: Iterable[int], ndim: int) -> Tuple[int, ...]:
+    """
+    Utility function for working with dask
+
+    Parameters
+    ----------
+    r : Iterable[int]
+        Radius for disk kernel
+    ndim : int
+        Number of dimensions
+
+    Returns
+    -------
+    Tuple[int, ...]
+        n-dimensional tuple with the value of the maximum radius in the final two entries
+    """
+    _r = max(r)
+    return (0,) * (ndim - 2) + (_r, _r)
+
+
+def apply_morph_operators(
+    mask_da: xarray.DataArray,
+    mask_filters: Iterable[MaskFilter],
+    name: Optional[str] = None,
+) -> xarray.DataArray:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    mask_da : xarray.DataArray
+        _description_
+    mask_filters : Iterable[MaskFilter]
+        _description_
+
+    Returns
+    -------
+    xarray.DataArray
+        _description_
+    """
+
+    data = mask_da.data
+
+    if dask.is_dask_collection(data):
+        radius_list = [radius for _, radius in mask_filters]
+        depth = _compute_overlap_depth(r=radius_list, ndim=data.ndim)
+
+        if name is None:
+            name = "apply_morph_operators"
+            for radius in radius_list:
+                name = name + f"_{radius}"
+
+        data = data.map_overlap(
+            partial(
+                _apply_morph_operators_np,
+                mask_filters=mask_filters,
+            ),
+            depth,
+            boundary="none",
+            name=_add_random_token_to_string(name),
+        )
+    else:
+        data = _apply_morph_operators_np(mask=data, mask_filters=mask_filters)
+
+    return xarray.DataArray(
+        data, attrs=mask_da.attrs, coords=mask_da.coords, dims=mask_da.dims
+    )
 
 
 def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.DataArray:

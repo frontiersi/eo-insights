@@ -214,7 +214,7 @@ class RasterBase:
 
         # Identify unmasked variables -- this is to ward against mutliple re-runs with inplace=False
         unmasked_vars = [
-            var for var in list(self.masks.data_vars) if "_masked" not in var.name
+            var for var in list(self.data.data_vars) if "_masked" not in var
         ]
 
         # Apply the mask to each variable
