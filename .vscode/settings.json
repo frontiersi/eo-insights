@@ -11,4 +11,19 @@
     "[python]": {
         "editor.formatOnType": true
     },
+    "cSpell.words": [
+        "baei",
+        "fmask",
+        "mndwi",
+        "msavi",
+        "ndci",
+        "ndvi",
+        "ndwi",
+        "nodata",
+        "pystac",
+        "remotesensingtools",
+        "stac",
+        "swir",
+        "xarray"
+    ],
 }

@@ -62,7 +62,7 @@ def calculate_indices(
         "nbr": lambda ds: (ds.nir - ds.swir2) / (ds.nir + ds.swir2),
         # Normalised Difference Chlorophyll Index
         "ndci": lambda ds: (ds.red_edge_1 - ds.red) / (ds.red_edge_1 + ds.red),
-        # Normalised Difference Vegation Index
+        # Normalised Difference Vegetation Index
         "ndvi": lambda ds: (ds.nir - ds.red) / (ds.nir + ds.red),
         # Normalised Difference Water Index (NDWI)
         "ndwi": lambda ds: (ds.green - ds.nir) / (ds.green + ds.nir),

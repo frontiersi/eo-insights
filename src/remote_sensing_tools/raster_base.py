@@ -145,7 +145,7 @@ class RasterBase:
             )
         else:
             boolean_mask = convert_mask_to_bool(
-                masks_array=self.masks, mask_name=mask_name
+                masks_ds=self.masks, mask_name=mask_name
             )
 
             # If the user is doing this inplace, the boolean mask will overwrite the original mask
