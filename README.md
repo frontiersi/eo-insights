@@ -15,7 +15,7 @@ conda activate remotesensingtools
 ```
 
 ### Install the package
-After activating the conda envrionemnt, run
+After activating the conda environment, run
 ```
 pip install -e .
 ```
