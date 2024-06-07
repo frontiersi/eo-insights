@@ -326,14 +326,16 @@ def apply_morph_operators(
     Parameters
     ----------
     mask_da : xarray.DataArray
-        _description_
+        Mask to apply the operation to
     mask_filters : Iterable[MaskFilter]
-        _description_
+        An iterable of tuples of the form (operation, radius),
+        where operation must be one of "dilation", "erosion", "opening", "closing"
+        and radius is the size of the disk to be used for the operation
 
     Returns
     -------
     xarray.DataArray
-        _description_
+        Mask after all operations have been applied.
     """
 
     data = mask_da.data
@@ -365,7 +367,34 @@ def apply_morph_operators(
 
 
 def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.DataArray:
-    """Convert a single mask_name from masks_ds from its base type to a boolean"""
+    """
+    Convert a single mask_name from masks_ds from its base type to a boolean
+
+    Parameters
+    ----------
+    masks_ds : xarray.Dataset
+        xarray.Dataset containing masks
+    mask_name : str
+        Name of the mask to convert
+
+    Returns
+    -------
+    xarray.DataArray
+        A boolean version of the selected mask
+
+    Raises
+    ------
+    KeyError
+        `mask_name` not a variable of `masks_ds`
+    KeyError
+        Selected categorical mask has no `categories_to_mask` attribute.
+    KeyError
+        Selected categorical mask has no `flags_definition` attribute.
+    NotImplementedError
+        No conversion strategy exists for the mask's type.
+    KeyError
+        Selected mask has no `mask_type` attribute.
+    """
 
     try:
         mask = masks_ds[mask_name]
@@ -385,7 +414,7 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
             # Get categories from metadata
             mask_categories = mask.attrs.get("categories_to_mask")
             if mask_categories is None:
-                raise ValueError(
+                raise KeyError(
                     f"Mask band {mask.name} has no categories to mask."
                     "Check metadata for categories to mask."
                 )
@@ -395,7 +424,7 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
             if mask_flags_definition is not None:
                 mask_category_values = mask_flags_definition.get("values")
             else:
-                raise ValueError(
+                raise KeyError(
                     f"Mask band {mask.name} has no flag definitions. Check metadata for mask."
                 )
 
@@ -417,7 +446,7 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
                 "Valid mask types are ['categorical', 'boolean']"
             )
     else:
-        raise ValueError(
+        raise KeyError(
             f"No mask type was found. Ensure {mask.name} has a valid 'mask_type' attribute."
         )
 
