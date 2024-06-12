@@ -5,6 +5,7 @@ import logging
 from dataclasses import dataclass
 from typing import Union, Optional
 
+import numpy as np
 import odc.stac
 import pystac_client
 import xarray
@@ -157,7 +158,11 @@ class RasterBase:
             self.masks[destination] = boolean_mask
 
     def apply_mask(
-        self, mask_name: str, data_inplace: bool = True, mask_inplace: bool = True
+        self,
+        mask_name: str,
+        nodata: Optional[object] = None,
+        data_inplace: bool = True,
+        mask_inplace: bool = True,
     ):
         """
         For a given mask, if it's a boolean, apply to data.
@@ -166,11 +171,17 @@ class RasterBase:
         Parameters
         ----------
         mask_name : str
-            _description_
+            Name of the mask to apply
+        nodata : Optional[object], optional
+            The value to use for nodata in the final output, by default None.
+            If None, the default value for the data variable will be used.
+            If no nodata value can be found for the variable, np.nan will be used.
         data_inplace : bool, optional
-            _description_, by default True
+            Whether to overwrite the unmasked data variable, by default True.
+            If False, a new variable called variable_name_masked will be created.
         mask_inplace : bool, optional
-            _description_, by default True
+            Whether to overwrite the original mask, by default True.
+            If False, a new variable called mask_name_bool will be created.
 
         Raises
         ------
@@ -180,7 +191,6 @@ class RasterBase:
             If `self.masks` is `None`
         KeyError
             If `self.masks` has no data variable `mask_name`
-
         """
         if self.data is None:
             raise ValueError(
@@ -212,7 +222,7 @@ class RasterBase:
         # Inverting allows us to apply it and keep the good values.
         inverted_mask = ~mask
 
-        # Identify unmasked variables -- this is to ward against mutliple re-runs with inplace=False
+        # Identify unmasked variables -- this is to ward against multiple re-runs with inplace=False
         unmasked_vars = [
             var for var in list(self.data.data_vars) if "_masked" not in var
         ]
@@ -224,6 +234,11 @@ class RasterBase:
             else:
                 destination = f"{variable}_masked"
 
+            # Add this to extract nodata directly from attributes.
+            # Cannot use .odc.nodata accessor, because it does not return native type
+            if nodata is None:
+                nodata = self.data[variable].attrs.get("nodata", np.nan)
+
             self.data[destination] = self.data[variable].where(
-                inverted_mask, other=self.data[variable].odc.nodata
+                inverted_mask, other=nodata
             )
