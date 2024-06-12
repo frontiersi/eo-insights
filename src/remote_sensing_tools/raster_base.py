@@ -3,14 +3,19 @@
 import logging
 
 from dataclasses import dataclass
-from typing import Union, Optional
+from typing import Union, Optional, Iterable
 
 import numpy as np
 import odc.stac
 import pystac_client
 import xarray
 from remote_sensing_tools.stac_utils import STACConfig
-from remote_sensing_tools.masking import set_mask_attributes, convert_mask_to_bool
+from remote_sensing_tools.masking import (
+    set_mask_attributes,
+    convert_mask_to_bool,
+    apply_morph_operators,
+    MaskFilter,
+)
 
 # Construct types for type hinting
 BBox = tuple[float, float, float, float]
@@ -126,7 +131,7 @@ class RasterBase:
 
         return cls(data, masks)
 
-    def generate_boolean_mask(self, mask_name: str, inplace: bool = True):
+    def generate_boolean_mask(self, mask_name: str, inplace: bool = True) -> str:
         """
         For a given mask, create the relevant boolean mask
 
@@ -137,30 +142,98 @@ class RasterBase:
         inplace : bool, optional
             Whether to modify the mask inplace, by default True.
             If False, a new variable will be created with mask_name followed by _bool.
+
+        Returns
+        -------
+        str
+            The variable name for the boolean mask
+
+        Raises
+        ------
+        ValueError
+            If `self.masks` is `None`
         """
 
         if self.masks is None:
-            _log.warning(
-                "The mask attribute for this %s is None. No mask can be generated",
-                type(self),
+            raise ValueError(
+                f"The mask attribute for this {type(self)} is None."
+                "There is no mask to operate on."
             )
+
+        boolean_mask = convert_mask_to_bool(masks_ds=self.masks, mask_name=mask_name)
+
+        # If the user is doing this inplace, the boolean mask will overwrite the original mask
+        if inplace:
+            destination = mask_name
         else:
-            boolean_mask = convert_mask_to_bool(
-                masks_ds=self.masks, mask_name=mask_name
+            destination = f"{mask_name}_bool"
+
+        self.masks[destination] = boolean_mask
+
+        return destination
+
+    def apply_morphological_operators(
+        self, mask_name: str, mask_filters: Iterable[MaskFilter], inplace: bool = True
+    ) -> str:
+        """
+        For a given mask, apply supplied morphological operations
+
+        Parameters
+        ----------
+        mask_name : str
+            Name of the mask
+        mask_filters : Iterable[MaskFilter]
+            An iterable of tuples of the form (operation, radius),
+            where operation must be one of "dilation", "erosion", "opening", "closing"
+            and radius is the size of the disk to be used for the operation
+        inplace : bool, optional
+            Whether to modify the mask inplace, by default True.
+            If False, a new variable will be created with mask_name followed by _filtered.
+
+        Returns
+        -------
+        str
+            The variable name for the filtered mask
+
+        Raises
+        ------
+        ValueError
+            If `self.masks` is `None`
+        KeyError
+            If `self.masks` has no data variable `mask_name`
+        """
+
+        if self.masks is None:
+            raise ValueError(
+                f"The mask attribute for this {type(self)} is None."
+                "There is no mask to operate on."
             )
 
-            # If the user is doing this inplace, the boolean mask will overwrite the original mask
-            if inplace:
-                destination = mask_name
-            else:
-                destination = f"{mask_name}_bool"
+        try:
+            mask = self.masks[mask_name]
+        except KeyError as e:
+            raise KeyError(
+                f"Mask '{mask_name}' was not recognised."
+                f"Available masks are {list(self.masks.data_vars)}."
+            ) from e
 
-            self.masks[destination] = boolean_mask
+        filtered_mask = apply_morph_operators(mask_da=mask, mask_filters=mask_filters)
+
+        # If the user is doing this inplace, the filtered mask will overwrite the original mask
+        if inplace:
+            destination = mask_name
+        else:
+            destination = f"{mask_name}_filtered"
+
+        self.masks[destination] = filtered_mask
+
+        return destination
 
     def apply_mask(
         self,
         mask_name: str,
         nodata: Optional[object] = None,
+        mask_filters: Optional[Iterable[MaskFilter]] = None,
         data_inplace: bool = True,
         mask_inplace: bool = True,
     ):
@@ -203,24 +276,26 @@ class RasterBase:
                 f"The mask attribute for this {type(self)} is None."
                 "There is no mask to be applied."
             )
-        else:
-            try:
-                mask = self.masks[mask_name]
-            except KeyError as e:
-                raise KeyError(
-                    f"Mask '{mask_name}' was not recognised."
-                    f"Available masks are {list(self.masks.data_vars)}."
-                ) from e
+
+        if mask_name not in self.masks:
+            raise KeyError(
+                f"Mask '{mask_name}' was not recognised."
+                f"Available masks are {list(self.masks.data_vars)}."
+            )
 
         # If not dealing with a boolean mask, create the boolean version
-        if mask.attrs.get("mask_type") != "boolean":
-            self.generate_boolean_mask(mask_name, inplace=mask_inplace)
-            if mask_inplace is False:
-                mask = self.masks[f"{mask_name}_bool"]
+        if self.masks[mask_name].attrs.get("mask_type") != "boolean":
+            mask_name = self.generate_boolean_mask(mask_name, inplace=mask_inplace)
+
+        # Apply morphological operations, if any
+        if mask_filters is not None:
+            mask_name = self.apply_morphological_operators(
+                mask_name, mask_filters=mask_filters, inplace=mask_inplace
+            )
 
         # Invert the mask, which is True for bad values, False for good values by design
         # Inverting allows us to apply it and keep the good values.
-        inverted_mask = ~mask
+        inverted_mask = ~self.masks[mask_name]
 
         # Identify unmasked variables -- this is to ward against multiple re-runs with inplace=False
         unmasked_vars = [
