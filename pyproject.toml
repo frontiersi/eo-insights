@@ -3,12 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "remote_sensing_tools"
+name = "eo-data-tools"
 version = "0.0.1"
 authors = [
   { name="Caitlin Adams", email="cadams@frontiersi.com.au" },
+  { name="Madeleine Seehaber", email="mseehaber@frontiersi.com.au" }
 ]
-description = "Tools for remote sensing analysis"
+description = "Tools for Earth observation data management and analysis"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
@@ -29,11 +30,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/frontiersi/remote-sensing-tools"
-Issues = "https://github.com/frontiersi/remote-sensing-tools/issues"
+Homepage = "https://github.com/frontiersi/eo-data-tools"
+Issues = "https://github.com/frontiersi/eo-data-tools/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-remote_sensing_tools = ["py.typed"]
+eo_data_tools = ["py.typed"]

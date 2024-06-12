@@ -1,4 +1,4 @@
-# remote-sensing-tools
+# eo-data-tools
 
 ## Conda Environment with Pip
 This package uses the approach of creating a conda environment, then pip installing the module.
@@ -6,12 +6,12 @@ Dependencies are listed in the `pyproject.toml` file.
 
 ### Set up
 ```
-cd remote-sensing-tools
-conda create -n "remotesensingtools" python=3.11.0
+cd eo-data-tools
+conda create -n "eodatatools" python=3.11.0
 ```
 ### Activate
 ```
-conda activate remotesensingtools
+conda activate eodatatools
 ```
 
 ### Install the package
