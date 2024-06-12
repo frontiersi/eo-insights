@@ -140,7 +140,8 @@ def _get_morph_operator(
     dask_enabled: bool,
 ) -> Callable:
     """
-    Select the correct morphological operations library from skimage or dask_image
+    Select the correct morphological operations library from skimage or dask_image.
+    dask_image library currently disabled as results differ from skimage.
 
     Parameters
     ----------
@@ -157,12 +158,13 @@ def _get_morph_operator(
         If not dask_enabled, the function comes from skimage.morphology.
     """
 
-    dask_operators: dict[MorphOperation, Callable] = {
-        "dilation": dask_image.ndmorph.binary_dilation,
-        "erosion": dask_image.ndmorph.binary_erosion,
-        "opening": dask_image.ndmorph.binary_opening,
-        "closing": dask_image.ndmorph.binary_closing,
-    }
+    # DISABLED UNTIL BEHAVIOUR MATCHES SKIMAGE
+    # dask_operators: dict[MorphOperation, Callable] = {
+    #     "dilation": dask_image.ndmorph.binary_dilation,
+    #     "erosion": dask_image.ndmorph.binary_erosion,
+    #     "opening": dask_image.ndmorph.binary_opening,
+    #     "closing": dask_image.ndmorph.binary_closing,
+    # }
 
     skimage_operators: dict[MorphOperation, Callable] = {
         "dilation": skimage.morphology.binary_dilation,
@@ -172,7 +174,10 @@ def _get_morph_operator(
     }
 
     if dask_enabled:
-        morph_operator = dask_operators[operation]
+        _log.warning(
+            "Attempting to use dask_image library, but this option is currently disabled. Defaulting to skimage instead."
+        )
+        morph_operator = skimage_operators[operation]  # dask_operators[operation]
     else:
         morph_operator = skimage_operators[operation]
 
