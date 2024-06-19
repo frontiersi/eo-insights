@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "eo-data-tools"
+name = "eo_insights"
 version = "0.0.1"
 authors = [
   { name="Caitlin Adams", email="cadams@frontiersi.com.au" },
   { name="Madeleine Seehaber", email="mseehaber@frontiersi.com.au" }
 ]
-description = "Tools for Earth observation data management and analysis"
+description = "Tools to support analysis of Earth observation data."
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
@@ -31,8 +31,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/frontiersi/eo-data-tools"
-Issues = "https://github.com/frontiersi/eo-data-tools/issues"
+Homepage = "https://github.com/frontiersi/eo-insights"
+Issues = "https://github.com/frontiersi/eo-insights/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
