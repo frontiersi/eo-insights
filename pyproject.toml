@@ -19,6 +19,7 @@ dependencies = [
   "black>=24.4.2",
   "dask[diagnostics]>=2024.5.2",
   "dask-image>=2024.5.3",
+  "geopandas>=0.14.4",
   "ipykernel>=6.29.4",
   "matplotlib>=3.9.0",
   "mypy>=1.10.0",
