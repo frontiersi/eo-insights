@@ -147,3 +147,14 @@ flags_definition.bits = [0, 1, 2]
 "nodata" = 0
 "valid" = 1
 "cloud" = 2
+
+# Landsat-8-9 yearly geomedian Product Definition
+[collections.ga_ls8cls9c_gm_cyear_3]
+description = "Landsat-8-9-gm"
+
+# List metadata attributes for spectral bands
+# TODO: add metadata for dev bands
+[collections.ga_ls8cls9c_gm_cyear_3.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
