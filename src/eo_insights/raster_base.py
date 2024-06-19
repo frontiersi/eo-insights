@@ -9,8 +9,8 @@ import numpy as np
 import odc.stac
 import pystac_client
 import xarray
-from eo_data_tools.stac_utils import STACConfig
-from eo_data_tools.masking import (
+from eo_insights.stac_utils import STACConfig
+from eo_insights.masking import (
     set_mask_attributes,
     convert_mask_to_bool,
     apply_morph_operators,

@@ -38,4 +38,4 @@ Issues = "https://github.com/frontiersi/eo-data-tools/issues"
 where = ["src"]
 
 [tool.setuptools.package-data]
-eo_data_tools = ["py.typed"]
+eo_insights = ["py.typed"]

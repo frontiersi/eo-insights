@@ -4,7 +4,7 @@ import logging
 
 from pathlib import Path
 
-from eo_data_tools.stac_utils import STACConfig
+from eo_insights.stac_utils import STACConfig
 
 _log = logging.getLogger(__name__)
 
