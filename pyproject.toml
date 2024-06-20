@@ -38,4 +38,4 @@ Issues = "https://github.com/frontiersi/eo-insights/issues"
 where = ["src"]
 
 [tool.setuptools.package-data]
-eo_insights = ["py.typed"]
+eo_insights = ["py.typed", "dataset_configuration/*.toml"]
