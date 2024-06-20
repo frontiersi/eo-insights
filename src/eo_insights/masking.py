@@ -12,7 +12,7 @@ import skimage.morphology
 from skimage.morphology import disk
 import numpy as np
 import xarray
-from remote_sensing_tools.stac_utils import MaskInfo
+from eo_insights.stac_utils import MaskInfo
 
 
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
