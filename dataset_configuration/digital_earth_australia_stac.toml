@@ -152,6 +152,15 @@ flags_definition.bits = [0, 1, 2]
 [collections.ga_ls8cls9c_gm_cyear_3]
 description = "Landsat-8&9 yearly geomedian"
 
+# Band aliases
+[collections.ga_ls8cls9c_gm_cyear_3.aliases]
+blue = "nbart_blue"
+green = "nbart_green"
+red = "nbart_red"
+nir = "nbart_nir"
+swir_1 = "nbart_swir_1"
+swir_2 = "nbart_swir_2"
+
 # List metadata attributes for spectral bands
 # TODO: add metadata for dev bands
 [collections.ga_ls8cls9c_gm_cyear_3.assets."*"]
