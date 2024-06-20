@@ -4,11 +4,11 @@ import logging
 
 from pathlib import Path
 
-from remote_sensing_tools.stac_utils import STACConfig
+from eo_insights.stac_utils import STACConfig
 
 _log = logging.getLogger(__name__)
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parent
 CONFIG_DIR = BASE_DIR.joinpath("dataset_configuration")
 
 # Manually create an instantiated STACConfig file for each file

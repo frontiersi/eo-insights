@@ -3,12 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "remote_sensing_tools"
+name = "eo_insights"
 version = "0.0.1"
 authors = [
   { name="Caitlin Adams", email="cadams@frontiersi.com.au" },
+  { name="Madeleine Seehaber", email="mseehaber@frontiersi.com.au" }
 ]
-description = "Tools for remote sensing analysis"
+description = "Tools to support analysis of Earth observation data."
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
@@ -19,6 +20,7 @@ dependencies = [
   "black>=24.4.2",
   "dask[diagnostics]>=2024.5.2",
   "dask-image>=2024.5.3",
+  "geopandas>=0.14.4",
   "ipykernel>=6.29.4",
   "matplotlib>=3.9.0",
   "mypy>=1.10.0",
@@ -32,11 +34,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/frontiersi/remote-sensing-tools"
-Issues = "https://github.com/frontiersi/remote-sensing-tools/issues"
+Homepage = "https://github.com/frontiersi/eo-insights"
+Issues = "https://github.com/frontiersi/eo-insights/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-remote_sensing_tools = ["py.typed"]
+eo_insights = ["py.typed", "dataset_configuration/*.toml"]

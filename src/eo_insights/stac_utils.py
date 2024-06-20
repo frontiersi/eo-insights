@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Union, Any
 import pathlib
 import tomllib
+import numpy
 
 PathType = Union[str, pathlib.Path]
 
@@ -97,6 +98,21 @@ class STACConfig:
         """Load the configuration from a TOML file"""
         with open(configuration_toml_path, mode="rb") as f:
             config_dict = tomllib.load(f)
+
+        # Specifically need to replace NaN with np.nan
+        for collection, settings in config_dict.get("collections", {}).items():
+            for asset, asset_settings in settings.get("assets", {}).items():
+                nodata = asset_settings.get("nodata", "")
+                if isinstance(nodata, str):
+                    if nodata.lower() == "nan":
+                        config_dict["collections"][collection]["assets"][asset][
+                            "nodata"
+                        ] = numpy.nan
+                    else:
+                        raise NotImplementedError(
+                            "Only NaN, nan, and NAN are accepted as string values for an asset's nodata value."
+                            "Check the configuration file."
+                        )
 
         return cls(config_dict)
 
