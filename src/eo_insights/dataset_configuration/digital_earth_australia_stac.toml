@@ -169,3 +169,13 @@ unit = "1"
 data_type = "float32"
 nodata = "NaN"
 unit = "1"
+
+# Collection
+[collections.ga_srtm_dem1sv1_0]
+description = "Geoscience Australia SRTM 1 second DEM version 1.0"
+
+# List default metadata attributes for all assets
+[collections.ga_srtm_dem1sv1_0.assets."*"]
+data_type = "float32"
+nodata = -340282346638528859811704183484516925440.0
+unit = "metre"
