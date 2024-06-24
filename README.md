@@ -1,15 +1,46 @@
-# remote-sensing-tools
+# eo-insights
 
-## Set up the conda environment
-````
-cd your-new-repo-directory
-conda env create -f environment.yml
-````
+## Conda Environment with Pip
+This package uses the approach of creating a conda environment, then pip installing the module.
+Dependencies are listed in the `pyproject.toml` file.
 
-## Install the package
-from the repository directory, run
+### Clone the repository
+In your terminal, run 
+```
+git clone https://github.com/frontiersi/eo-insights.git
+```
+
+### Set up
+```
+conda create -n "eoinsights" python=3.11.0
+```
+### Activate
+```
+conda activate eoinsights
+```
+
+### Install the package
+
+In your terminal, navigate to the cloned repository folder.
+Required dependencies are specified in the `pyproject.toml` file, 
+and will be installed with pip.
+
+#### Users
+After activating the conda environment, run
+```
+pip install .
+```
+
+#### Developers
+After activating the conda environment, run
 ```
 pip install -e .
 ```
+to install the package in editable mode.
 
-## Experiment
+### Deactivate
+When you have finished working, deactivate the environment.
+
+```
+conda deactivate
+```

@@ -11,4 +11,31 @@
     "[python]": {
         "editor.formatOnType": true
     },
+    "cSpell.words": [
+        "baei",
+        "dask",
+        "dtype",
+        "fmask",
+        "geobox",
+        "geopandas",
+        "isin",
+        "mndwi",
+        "MORPHOPERATIONS",
+        "msavi",
+        "ndarray",
+        "ndci",
+        "ndim",
+        "ndmorph",
+        "ndvi",
+        "ndwi",
+        "newaxis",
+        "nodata",
+        "pystac",
+        "rasterio",
+        "remotesensingtools",
+        "skimage",
+        "stac",
+        "swir",
+        "xarray"
+    ],
 }
