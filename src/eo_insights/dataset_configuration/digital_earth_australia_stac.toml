@@ -220,7 +220,7 @@ description = "SRTM DEM"
 # List metadata attributes
 [collections.ga_srtm_dem1sv1_0.assets."*"]
 data_type = "float32"
-nodata = -340282346638528859811704183484516925440
+nodata = -340282346638528859811704183484516925440.0
 unit = "metre"
 
 # Multiscale topographic position image product Definition
@@ -240,5 +240,5 @@ description = "Weathering Intensity"
 # List metadata attributes
 [collections.weathering_intensity.assets."*"]
 data_type = "float32"
-nodata = -1
+nodata = -1.0
 unit = "0.16666666666666666"
