@@ -27,7 +27,7 @@ and will be installed with pip.
 
 #### Users
 For users, we recommend installing the package along with additional dependencies to enhance working in notebooks. 
-To do this, run
+After activating the conda environment, run
 ```
 pip install .[notebooks]
 ```
