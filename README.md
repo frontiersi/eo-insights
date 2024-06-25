@@ -26,7 +26,13 @@ Required dependencies are specified in the `pyproject.toml` file,
 and will be installed with pip.
 
 #### Users
-After activating the conda environment, run
+For users, we recommend installing the package along with additional dependencies to enhance working in notebooks. 
+To do this, run
+```
+pip install .[notebooks]
+```
+
+Alternatively, to install just the required dependencies, run
 ```
 pip install .
 ```
