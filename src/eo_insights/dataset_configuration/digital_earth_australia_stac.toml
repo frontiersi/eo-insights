@@ -215,7 +215,7 @@ swir_2 = "s2be_swir_3"
 
 # SRTM DEM product Definition
 [collections.ga_srtm_dem1sv1_0]
-description = "SRTM DEM"
+description = "Geoscience Australia SRTM 1 second DEM version 1.0"
 
 # List metadata attributes
 [collections.ga_srtm_dem1sv1_0.assets."*"]

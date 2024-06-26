@@ -27,10 +27,15 @@ dependencies = [
   "odc-stac>=0.3.9",
   "pylint>=3.2.2",
   "pystac-client>=0.8.2",
-  "scikit-image>=0.23.2",
   "rasterstats>=0.19.0",
-  "geopandas>=0.14.4",
-  "scikit-learn>=1.5.0"
+  "scikit-image>=0.23.2",
+  "scikit-learn>=1.5.0",
+]
+
+[project.optional-dependencies]
+notebooks = [
+  "folium>=0.17.0",
+  "mapclassify>=2.6.1",
 ]
 
 [project.urls]
