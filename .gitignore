@@ -163,4 +163,4 @@ cython_debug/
 #.idea/
 
 # notebook data folder
-notebooks/native_species_data
+notebooks/data
