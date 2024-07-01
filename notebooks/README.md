@@ -16,7 +16,7 @@ We recommend browsing the notebooks in the following order.
 ### General functionality for loading data from STAC catalogs
 
 1. [load_demo.ipynb](load_demo.ipynb)
-1. [stac_catalog_demo.ipynb](stac_catalog_demo)
+1. [stac_catalog_demo.ipynb](stac_catalog_demo.ipynb)
 1. [masking_demo.ipynb](masking_demo.ipynb)
 
 ### Additional functionality after loading data
