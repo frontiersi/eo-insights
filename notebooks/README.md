@@ -27,3 +27,11 @@ We recommend browsing the notebooks in the following order.
 ### Advanced topics
 
 1. [configuration_demo.ipynb](configuration_demo.ipynb)
+
+### Machine learning
+To demonstrate how this package can be used to support EO-based analytics, we provide two machine learning notebooks that were inspired by work undertaken at FrontierSI. 
+These notebooks are for demonstration purposes only, and use small subsets of free and open data from Australian databases.
+The models developed in these notebooks are not fit for use outside of this demonstration.
+
+1. [machine_learning_habitat_mapping_demo.ipynb](machine_learning_habitat_mapping_demo.ipynb)
+1. [machine_learning_species_mapping_demo.ipynb](machine_learning_habitat_mapping_demo.ipynb)

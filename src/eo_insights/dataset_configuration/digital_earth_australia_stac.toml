@@ -169,3 +169,76 @@ unit = "1"
 data_type = "float32"
 nodata = "NaN"
 unit = "1"
+
+# Landsat-8-9 yearly geomedian Product Definition
+[collections.ga_ls8cls9c_gm_cyear_3]
+description = "Landsat-8&9 yearly geomedian"
+
+# Band aliases
+[collections.ga_ls8cls9c_gm_cyear_3.aliases]
+blue = "nbart_blue"
+green = "nbart_green"
+red = "nbart_red"
+nir = "nbart_nir"
+swir_1 = "nbart_swir_1"
+swir_2 = "nbart_swir_2"
+
+# List metadata attributes for spectral bands
+# TODO: add metadata for dev bands
+[collections.ga_ls8cls9c_gm_cyear_3.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
+
+# Sentinel-2 Barest Earth Product Definition
+[collections.s2_barest_earth]
+description = "Sentinel-2 Barest Earth"
+
+# List metadata attributes for spectral bands
+[collections.s2_barest_earth.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
+
+# Band aliases
+[collections.s2_barest_earth.aliases]
+blue = "s2be_blue"
+green = "s2be_green"
+red = "s2be_red"
+red_edge_1 = "s2be_red_edge_1"
+red_edge_2 = "s2be_red_edge_2"
+red_edge_3 = "s2be_red_edge_3"
+nir = "s2be_nir_1"
+nir_2 = "s2be_nir_2"
+swir_1 = "s2be_swir_2"
+swir_2 = "s2be_swir_3"
+
+# SRTM DEM product Definition
+[collections.ga_srtm_dem1sv1_0]
+description = "Geoscience Australia SRTM 1 second DEM version 1.0"
+
+# List metadata attributes
+[collections.ga_srtm_dem1sv1_0.assets."*"]
+data_type = "float32"
+nodata = -340282346638528859811704183484516925440.0
+unit = "metre"
+
+# Multiscale topographic position image product Definition
+[collections.multi_scale_topographic_position]
+description = "Multiscale topographic position image"
+
+# List metadata attributes
+[collections.multi_scale_topographic_position.assets."*"]
+data_type = "int16"
+nodata = 0
+unit = "0.0039"
+
+# Weathering Intensity product Definition
+[collections.weathering_intensity]
+description = "Weathering Intensity"
+
+# List metadata attributes
+[collections.weathering_intensity.assets."*"]
+data_type = "float32"
+nodata = -1.0
+unit = "0.16666666666666666"

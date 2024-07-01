@@ -13,6 +13,8 @@ IndexName = Literal[
 def calculate_indices(
     ds: xarray.Dataset, index: Union[IndexName, Iterable[IndexName]]
 ) -> xarray.Dataset:
+    # TODO: consider option allowing dropping original bands
+    # TODO: add description for required value ranges of input bands (e.g. spectral refletance between 0 and 1) so that some parameters within formula still apply
     """
     Parameters
     ----------
