@@ -36,6 +36,8 @@ dependencies = [
 [project.optional-dependencies]
 notebooks = [
   "folium>=0.17.0",
+  "ipyleaflet>=0.19.2",
+  "jupyter_ui_poll>=1.0.0",
   "mapclassify>=2.6.1",
 ]
 
