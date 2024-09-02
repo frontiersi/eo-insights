@@ -32,8 +32,8 @@ class MaskInfo:
     description: str
     collection: str
     mask_type: str
-    categories_to_mask: list[str]
-    flags_definition: dict[str, Any]
+    default_masking_settings: dict[str, Any]
+    flags_definition: dict[str, dict[str, Any]]
 
 
 def _get_mask_info(collection_id: str, mask_id: str, mask_config: dict) -> MaskInfo:
@@ -45,7 +45,7 @@ def _get_mask_info(collection_id: str, mask_id: str, mask_config: dict) -> MaskI
         description=mask_config.get("description", ""),
         collection=collection_id,
         mask_type=mask_config.get("type", ""),
-        categories_to_mask=mask_config.get("categories_to_mask", []),
+        default_masking_settings=mask_config.get("default_masking_settings", {}),
         flags_definition=mask_config.get("flags_definition", {}),
     )
 
