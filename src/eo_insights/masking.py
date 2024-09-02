@@ -4,10 +4,9 @@ from functools import partial
 import logging
 from random import randint
 import typing
-from typing import Union, Literal, Iterable, Tuple, Callable, Optional, Any
+from typing import Union, Literal, Iterable, Tuple, Callable, Optional
 
 import dask
-import dask_image.ndmorph  # type: ignore
 import skimage.morphology
 from skimage.morphology import disk
 import numpy as np
@@ -18,6 +17,11 @@ from eo_insights.stac_utils import MaskInfo
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
 MorphOperation = Literal["dilation", "erosion", "opening", "closing"]
 MORPHOPERATIONS = typing.get_args(MorphOperation)
+
+FlagDefValues = dict[str, Union[bool, str]]
+FlagDefBits = Union[int, list[int]]
+FlagDef = dict[str, Union[FlagDefBits, FlagDefValues]]
+FlagsDefinition = dict[str, FlagDef]
 
 MaskFilter = Tuple[MorphOperation, int]
 
@@ -142,23 +146,87 @@ def set_value_at_index(bitmask: int, index: int, value: bool) -> int:
 
 
 def get_flag_information(
-    flag: str, flags_definition: dict[str, dict[str, str | bool | int | Iterable]]
-):
+    flag: str, flags_definition: FlagsDefinition
+) -> Tuple[list[int], dict[str, bool | str]]:
+    """
+    For a given flag, return the flag bits and values from the flags_definition.
+    This should only be used for bitmask types.
 
-    bits_and_values = flags_definition.get(flag, None)
+    Parameters
+    ----------
+    flag : str
+        Flag to extract bits and values for
+    flags_definition : FlagsDefinition
+        Dictionary of the structure: {flag: {bits: [], values: {}}}
 
+    Returns
+    -------
+    Tuple[list[int] | dict[str, bool | str]]
+        A tuple of (bits, values), for example
+        bits = [6, 7], values = {'0': "climatology aerosol", '1': "low aerosol"}
+
+    Raises
+    ------
+    KeyError
+        flags_definition has no flag: "flag"
+    KeyError
+        "flag" in flags_definition has no key 'bits'. Check configuration.
+    KeyError
+        "flag" in flags_definition has no key 'values'. Check configuration."
+    """
+
+    bits_and_values: FlagDef | None = flags_definition.get(flag, None)  # type: ignore
     if bits_and_values is None:
-        raise KeyError(f'Unknown flag: "{flag}"')
+        raise KeyError(f"flags_definition has no flag: '{flag}'.")
 
-    bits = bits_and_values["bits"]
-    bits = [bits] if isinstance(bits, int) else bits
+    # Get bits used by this flag
+    bits: FlagDefBits | None = bits_and_values.get("bits", None)  # type: ignore
+    if bits is None:
+        raise KeyError(
+            f"'{flag}' in flags_definition has no key 'bits'. Check configuration."
+        )
 
-    values = bits_and_values["values"]
+    # Convert bits from any to list of integers
+    if isinstance(bits, int):
+        bits_list = [bits]
+    else:
+        bits_list = bits
 
-    return (bits, values)
+    values: FlagDefValues | None = bits_and_values.get("values", None)  # type: ignore
+    if values is None:
+        raise KeyError(
+            f"'{flag}' in flags_definition has no key 'values'. Check configuration."
+        )
+
+    return (bits_list, values)
 
 
-def get_flag_value_for_option(requested_option, flag_values) -> int | None:
+def get_flag_value_for_option(
+    requested_option: str | bool, flag_values: FlagDefValues
+) -> int:
+    """
+    Determine the integer that corresponds to the flag option requested by the user
+
+    Parameters
+    ----------
+    requested_option : str
+        Flag requested by the user, e.g. "low aerosol"
+    flag_values : FlagDefValues
+        A dictionary mapping strings of integers to options
+        e.g. {'0': "climatology aerosol", '1': "low aerosol"}
+
+
+    Returns
+    -------
+    int
+        The value to use for bitmasking
+
+    Raises
+    ------
+    KeyError
+        No appropriate value was found.
+    """
+
     value = next(
         (
             int(value)
@@ -168,10 +236,27 @@ def get_flag_value_for_option(requested_option, flag_values) -> int | None:
         None,
     )
 
+    if value is None:
+        raise KeyError("Value was None please try again")
+
     return value
 
 
-def make_reference_mask(bits) -> int:
+def make_reference_mask(bits: list[int]) -> int:
+    """
+    Create a reference mask, which sets all values listed in
+
+    Parameters
+    ----------
+    bits : list[int]
+        Bits to generate a reference mask for. e.g. [6, 7]
+
+    Returns
+    -------
+    int
+        An integer version of the reference mask.
+        e.g. [6, 7] produces a reference mask of 0b01100000, output as 96
+    """
     reference_mask = 0
     for bit in bits:
         reference_mask = set_value_at_index(reference_mask, bit, True)
@@ -179,7 +264,26 @@ def make_reference_mask(bits) -> int:
     return reference_mask
 
 
-def make_reference_value(requested_value, bits) -> int:
+def make_reference_value(requested_value: int, bits: list[int]) -> int:
+    """
+    Calculate the integer that corresponds to the requested value from the user
+
+    Parameters
+    ----------
+    requested_value : int
+        An integer representing the option selected by the user.
+        e.g. "low aerosol" has a value of 1 at the relevant bits
+    bits : list[int]
+        The relevant bits for the requested value
+        e.g. [6, 7]
+
+    Returns
+    -------
+    int
+        An integer version of the reference mask.
+        e.g. as requested value of 1 at bits [6, 7] produces
+        a reference value of 0b00100000, output as 32
+    """
     reference_value = requested_value << min(bits)
 
     return reference_value
@@ -188,9 +292,33 @@ def make_reference_value(requested_value, bits) -> int:
 def create_mask_from_flag(
     pq_band: xarray.DataArray,
     flag: str,
-    option: str | bool | int,
-    flags_definition: dict[str, dict[str, str | bool | int | Iterable]],
+    option: str | bool,
+    flags_definition: FlagsDefinition,
 ) -> xarray.DataArray:
+    """
+    Convert from a flag with requested value to a boolean raster mask
+
+    Parameters
+    ----------
+    pq_band : xarray.DataArray
+        Pixel quality band
+    flag : str
+        The flag to mask
+    option : str | bool
+        The setting of the flag to mask
+    flags_definition : FlagsDefinition
+        The flags_definition containing the flag, and its bits and values
+
+    Returns
+    -------
+    xarray.DataArray
+        A boolean raster mask with True for the values that match the option, and False otherwise
+
+    Raises
+    ------
+    KeyError
+        A valid flag option was not provided
+    """
 
     # Extract list of bits, and dict of (value, option) pairs
     # for the chosen flag from the flags definition
@@ -198,10 +326,6 @@ def create_mask_from_flag(
 
     # Extract the integer value that maps to the chosen option
     flag_value = get_flag_value_for_option(option, values)
-    if flag_value is None:
-        raise KeyError(
-            f"{option} is not a valid option for {flag}. Possible options are {list(values.values())}"
-        )
 
     # Create the binary reference mask
     reference_mask = make_reference_mask(bits)
@@ -220,8 +344,32 @@ def create_mask_from_flag(
 def generate_bit_mask(
     pq_band: xarray.DataArray,
     mask_settings: dict[str, str | bool],
-    flags_definition: dict[str, dict[str, str | bool]],
+    flags_definition: FlagsDefinition,
 ):
+    """
+    For all given mask settings, compute the boolean raster mask where any conditions are true
+    Masks are generated for each setting and then combined using bitwise OR
+
+    Parameters
+    ----------
+    pq_band : xarray.DataArray
+        Pixel quality band
+    mask_settings : dict[str, str | bool]
+        A dictionary of settings for the mask. e.g. {"cloud": True, "aerosol level": "high aerosol"}
+    flags_definition : FlagsDefinition
+        The flags_definition containing the flag, and its bits and values
+
+    Returns
+    -------
+    xarray.DataArray
+        A boolean raster mask with True where the pixel quality band matches any of the mask settings
+
+
+    Raises
+    ------
+    ValueError
+        The mask failed to generate.
+    """
     mask = None
 
     for flag, option in mask_settings.items():
@@ -233,7 +381,8 @@ def generate_bit_mask(
 
     if mask is None:
         raise ValueError(
-            "The bit mask was not generated. Check mask settings and flags definition and try again."
+            "The bit mask was not generated."
+            "Check mask settings and flags definition and try again."
         )
 
     return mask
