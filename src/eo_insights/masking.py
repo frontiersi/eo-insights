@@ -4,7 +4,7 @@ from functools import partial
 import logging
 from random import randint
 import typing
-from typing import Union, Literal, Iterable, Tuple, Callable, Optional
+from typing import Union, Literal, Iterable, Tuple, Callable, Optional, Any
 
 import dask
 import dask_image.ndmorph  # type: ignore
@@ -51,7 +51,7 @@ def set_mask_attributes(
         mask.attrs.update(
             collection=mask_info.collection,
             mask_type=mask_info.mask_type,
-            categories_to_mask=mask_info.categories_to_mask,
+            default_masking_settings=mask_info.default_masking_settings,
             flags_definition=mask_info.flags_definition,
         )
     else:
@@ -91,6 +91,155 @@ def generate_categorical_mask(
     mask_bool.attrs.update(mask_type="boolean")
 
     return mask_bool
+
+
+# Binary masking utils
+def set_value_at_index(bitmask: int, index: int, value: bool) -> int:
+    """
+    Set a bit value onto an integer bitmask
+
+    For example, starting with 0,
+    >>> mask = 0
+    >>> print(bin(mask))
+    0b0
+
+    Set bits 2 and 4 to True
+    >>> mask = set_value_at_index(mask, 2, True)
+    >>> mask = set_value_at_index(mask, 4, True)
+    >>> print(bin(mask))
+    0b10100
+
+    Then set bit 2 to False
+    >>> mask = set_value_at_index(mask, 2, False)
+    >>> print(bin(mask))
+    0b10000
+
+    Parameters
+    ----------
+    bitmask : int
+        An existing integer bitmask
+    index : int
+        The index of the binary bitmask that will be set
+    value : bool
+        The value to set it as (True or False)
+
+    Returns
+    -------
+    int
+        The updated bitmask
+    """
+
+    bit_value = 2**index
+
+    if value:
+        # For True, perform bitwise OR on the bitmask and the bit value
+        bitmask |= bit_value
+    else:
+        # For False, perform bitwise AND on the bitmask and the inversion of the bit value
+        bitmask &= ~bit_value
+
+    return bitmask
+
+
+def get_flag_information(
+    flag: str, flags_definition: dict[str, dict[str, str | bool | int | Iterable]]
+):
+
+    bits_and_values = flags_definition.get(flag, None)
+
+    if bits_and_values is None:
+        raise KeyError(f'Unknown flag: "{flag}"')
+
+    bits = bits_and_values["bits"]
+    bits = [bits] if isinstance(bits, int) else bits
+
+    values = bits_and_values["values"]
+
+    return (bits, values)
+
+
+def get_flag_value_for_option(requested_option, flag_values) -> int | None:
+    value = next(
+        (
+            int(value)
+            for value, option in flag_values.items()
+            if option == requested_option
+        ),
+        None,
+    )
+
+    return value
+
+
+def make_reference_mask(bits) -> int:
+    reference_mask = 0
+    for bit in bits:
+        reference_mask = set_value_at_index(reference_mask, bit, True)
+
+    return reference_mask
+
+
+def make_reference_value(requested_value, bits) -> int:
+    reference_value = requested_value << min(bits)
+
+    return reference_value
+
+
+def create_mask_from_flag(
+    pq_band: xarray.DataArray,
+    flag: str,
+    option: str | bool | int,
+    flags_definition: dict[str, dict[str, str | bool | int | Iterable]],
+) -> xarray.DataArray:
+
+    # Extract list of bits, and dict of (value, option) pairs
+    # for the chosen flag from the flags definition
+    bits, values = get_flag_information(flag, flags_definition)
+
+    # Extract the integer value that maps to the chosen option
+    flag_value = get_flag_value_for_option(option, values)
+    if flag_value is None:
+        raise KeyError(
+            f"{option} is not a valid option for {flag}. Possible options are {list(values.values())}"
+        )
+
+    # Create the binary reference mask
+    reference_mask = make_reference_mask(bits)
+
+    # Create the value the mask must equal to produce the chosen option
+    reference_value = make_reference_value(flag_value, bits)
+
+    # Perform bitwise and to identify all pixels in pq_band
+    # that satisfy the chosen option (represented by the reference value)
+    # for the reference mask
+    mask = pq_band & reference_mask == reference_value
+
+    return mask
+
+
+def generate_bit_mask(
+    pq_band: xarray.DataArray,
+    mask_settings: dict[str, str | bool],
+    flags_definition: dict[str, dict[str, str | bool]],
+):
+    mask = None
+
+    for flag, option in mask_settings.items():
+        flag_mask = create_mask_from_flag(pq_band, flag, option, flags_definition)
+        if mask is None:
+            mask = flag_mask
+        else:
+            mask = mask | flag_mask
+
+    if mask is None:
+        raise ValueError(
+            "The bit mask was not generated. Check mask settings and flags definition and try again."
+        )
+
+    return mask
+
+
+# def generate_bit_mask(mask: xarray.DataArray, categories: list[str], category_values: dict[str, dict]):
 
 
 # Adapted from odc-algo
@@ -417,8 +566,9 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
         # Convert categorical mask to boolean
         if mask_type == "categorical":
             # Get categories from metadata
-            mask_categories = mask.attrs.get("categories_to_mask")
-            if mask_categories is None:
+            masking_settings = mask.attrs.get("default_masking_settings", {})
+            mask_categories = [key for key, _ in masking_settings.items()]
+            if len(mask_categories) == 0:
                 raise KeyError(
                     f"Mask band {mask.name} has no categories to mask."
                     "Check metadata for categories to mask."
@@ -441,6 +591,30 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
                 categories=mask_categories,
                 category_values=mask_category_values,
             )
+        elif mask_type == "bitflags":
+
+            # Get settings from metadata
+            masking_settings = mask.attrs.get("default_masking_settings")
+            if masking_settings is None:
+                raise KeyError(
+                    f"Mask band {mask.name} has no default masking settings."
+                    "Check metadata for default_masking_settings."
+                )
+            mask_flags_definition = mask.attrs.get("flags_definition")
+            if mask_flags_definition is None:
+                raise KeyError(
+                    f"Mask band {mask.name} has no flag definitions. Check metadata for flags_definitions."
+                )
+
+            _log.info("Converting bitmask to boolean")
+            _log.info("Selecting all pixels belonging to any of %s", masking_settings)
+
+            masks_ds_bool = generate_bit_mask(
+                pq_band=mask,
+                mask_settings=masking_settings,
+                flags_definition=mask_flags_definition,
+            )
+
         elif mask_type == "boolean":
             _log.info("Using boolean mask as is.")
             masks_ds_bool = mask
