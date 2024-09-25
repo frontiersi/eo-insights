@@ -242,3 +242,19 @@ description = "Weathering Intensity"
 data_type = "float32"
 nodata = -1.0
 unit = "0.16666666666666666"
+
+# Landsat Fractional Cover Percentile Calendar Year Collection 3
+[collections.ga_ls_fc_pc_cyear_3]
+description = "Fractional Cover"
+
+# List metadata attributes for all bands
+[collections.ga_ls_fc_pc_cyear_3.assets."*"]
+data_type = "uint8"
+nodata = 255
+unit = "percent"
+
+# Overwrite metadata for qa band
+[collections.ga_ls_fc_pc_cyear_3.assets.qa]
+data_type = "uint8"
+nodata = 255
+unit = "1"
