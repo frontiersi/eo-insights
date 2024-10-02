@@ -45,7 +45,7 @@ unit = "1"
 alias = "scl"
 description = "Scene Classification Map"
 type = "categorical"
-categories_to_mask = ["cloud high probability", "cloud medium probability", "thin cirrus", "cloud shadows", "saturated or defective"]
+default_masking_settings = {"cloud high probability" = true, "cloud medium probability"= true, "thin cirrus"= true, "cloud shadows"= true, "saturated or defective"= true}
 flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 
 # Set up scl config 

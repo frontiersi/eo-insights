@@ -49,3 +49,16 @@ except FileNotFoundError:
         "The config file for Digital Earth Australia was not found. The expected location is: %s",
         CONFIG_PATH,
     )
+
+# NASA LP CLOUD
+try:
+    CONFIG_PATH = CONFIG_DIR.joinpath("nasa_lpcloud_stac.toml")
+
+    nasa_lpcloud_stac_config = STACConfig.from_toml(
+        configuration_toml_path=CONFIG_DIR.joinpath(CONFIG_PATH)
+    )
+except FileNotFoundError:
+    _log.exception(
+        "The config file for NASA LPCLOUD was not found. The expected location is: %s",
+        CONFIG_PATH,
+    )
