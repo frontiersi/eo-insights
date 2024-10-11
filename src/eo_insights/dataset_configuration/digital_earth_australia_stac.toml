@@ -170,6 +170,28 @@ data_type = "float32"
 nodata = "NaN"
 unit = "1"
 
+# Collection
+[collections.ga_ls_wo_fq_myear_3]
+description = "Geoscience Australia Landsat Water Observations Frequency Multi Year Collection 3"
+
+#Start with aliases for bands
+[collections.ga_ls_wo_fq_myear_3.aliases]
+count_wet = "count_wet"
+count_clear = "count_clear"
+frequency = "frequency"
+
+# List default metadata attributes for all assets
+[collections.ga_ls_wo_fq_myear_3.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
+
+# Overwrite metadata for any unique bands
+[collections.ga_ls_wo_fq_myear_3.assets.frequency]
+data_type = "float32"
+nodata = "NaN"
+unit = "1"
+
 # Landsat-8-9 yearly geomedian Product Definition
 [collections.ga_ls8cls9c_gm_cyear_3]
 description = "Landsat-8&9 yearly geomedian"
