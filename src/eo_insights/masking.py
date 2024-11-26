@@ -1,18 +1,19 @@
 """Functionality for managing data masks"""
 
-from functools import partial
-import logging
-from random import randint
 import typing
-from typing import Union, Literal, Iterable, Tuple, Callable, Optional
+from functools import partial
+from random import randint
+from typing import Callable, Iterable, Literal, Optional, Tuple, Union
 
 import dask
-import skimage.morphology
-from skimage.morphology import disk
 import numpy as np
-import xarray
-from eo_insights.stac_utils import MaskInfo
+import skimage.morphology
 
+# import dask_image.ndmorph  # type: ignore
+import xarray
+from skimage.morphology import disk
+
+from eo_insights.stac_utils import MaskInfo
 
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
 MorphOperation = Literal["dilation", "erosion", "opening", "closing"]
@@ -24,8 +25,6 @@ FlagDef = dict[str, Union[FlagDefBits, FlagDefValues]]
 FlagsDefinition = dict[str, FlagDef]
 
 MaskFilter = Tuple[MorphOperation, int]
-
-_log = logging.getLogger(__name__)
 
 
 def set_mask_attributes(
@@ -472,9 +471,6 @@ def _get_morph_operator(
     }
 
     if dask_enabled:
-        _log.warning(
-            "Attempting to use dask_image library, but this option is currently disabled. Defaulting to skimage instead."
-        )
         morph_operator = skimage_operators[operation]  # dask_operators[operation]
     else:
         morph_operator = skimage_operators[operation]
@@ -711,7 +707,6 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
     mask_type = mask.attrs.get("mask_type")
 
     if mask_type is not None:
-
         # Convert categorical mask to boolean
         if mask_type == "categorical":
             # Get categories from metadata
@@ -732,16 +727,12 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
                     f"Mask band {mask.name} has no flag definitions. Check metadata for mask."
                 )
 
-            _log.info("Converting categorical mask to boolean")
-            _log.info("Selecting all pixels belonging to any of %s", mask_categories)
-
             masks_ds_bool = generate_categorical_mask(
                 mask=mask,
                 categories=mask_categories,
                 category_values=mask_category_values,
             )
         elif mask_type == "bitflags":
-
             # Get settings from metadata
             masking_settings = mask.attrs.get("default_masking_settings")
             if masking_settings is None:
@@ -755,9 +746,6 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
                     f"Mask band {mask.name} has no flag definitions. Check metadata for flags_definitions."
                 )
 
-            _log.info("Converting bitmask to boolean")
-            _log.info("Selecting all pixels belonging to any of %s", masking_settings)
-
             masks_ds_bool = generate_bit_mask(
                 pq_band=mask,
                 mask_settings=masking_settings,
@@ -765,7 +753,6 @@ def convert_mask_to_bool(masks_ds: xarray.Dataset, mask_name: str) -> xarray.Dat
             )
 
         elif mask_type == "boolean":
-            _log.info("Using boolean mask as is.")
             masks_ds_bool = mask
         else:
             raise NotImplementedError(

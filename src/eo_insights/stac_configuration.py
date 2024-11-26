@@ -1,15 +1,14 @@
 """Construct all available configurations"""
 
-import logging
-
 from pathlib import Path
 
 from eo_insights.stac_utils import STACConfig
-
-_log = logging.getLogger(__name__)
+from eo_insights.utils import EOInsightsException
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_DIR = BASE_DIR.joinpath("dataset_configuration")
+
+print("Trying to load stuff")
 
 # Manually create an instantiated STACConfig file for each file
 # DIGITAL EARTH AFRICA
@@ -20,9 +19,8 @@ try:
         configuration_toml_path=CONFIG_DIR.joinpath(CONFIG_PATH)
     )
 except FileNotFoundError:
-    _log.exception(
-        "The config file for Digital Earth Africa was not found. The expected location is: %s",
-        CONFIG_PATH,
+    raise EOInsightsException(
+        f"The config file for Digital Earth Africa was not found. The expected location is: {CONFIG_PATH}"
     )
 
 # DIGITAL EARTH AUSTRALIA
@@ -33,11 +31,11 @@ try:
         configuration_toml_path=CONFIG_DIR.joinpath(CONFIG_PATH)
     )
 except FileNotFoundError:
-    _log.exception(
-        "The config file for Digital Earth Australia was not found. The expected location is: %s",
-        CONFIG_PATH,
+    raise EOInsightsException(
+        f"The config file for Digital Earth Australia was not found. The expected location is: {CONFIG_PATH}"
     )
 
+# ELEMENT 84
 try:
     CONFIG_PATH = CONFIG_DIR.joinpath("element_84_stac.toml")
 
@@ -45,9 +43,8 @@ try:
         configuration_toml_path=CONFIG_DIR.joinpath(CONFIG_PATH)
     )
 except FileNotFoundError:
-    _log.exception(
-        "The config file for Digital Earth Australia was not found. The expected location is: %s",
-        CONFIG_PATH,
+    raise EOInsightsException(
+        f"The config file for Element 84 was not found. The expected location is: {CONFIG_PATH}"
     )
 
 # NASA LP CLOUD
