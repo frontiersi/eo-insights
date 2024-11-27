@@ -54,7 +54,6 @@ try:
         configuration_toml_path=CONFIG_DIR.joinpath(CONFIG_PATH)
     )
 except FileNotFoundError:
-    _log.exception(
-        "The config file for NASA LPCLOUD was not found. The expected location is: %s",
-        CONFIG_PATH,
+    raise EOInsightsException(
+        f"The config file for NASA LPCLOUD was not found. The expected location is: {CONFIG_PATH}"
     )
