@@ -8,7 +8,6 @@ from eo_insights.utils import EOInsightsException
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_DIR = BASE_DIR.joinpath("dataset_configuration")
 
-print("Trying to load stuff")
 
 # Manually create an instantiated STACConfig file for each file
 # DIGITAL EARTH AFRICA
