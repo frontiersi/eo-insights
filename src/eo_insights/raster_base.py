@@ -1,28 +1,26 @@
 """Data loading"""
 
-import logging
-
 from dataclasses import dataclass
-from typing import Union, Optional, Iterable
+import logging
+from typing import Iterable, Optional, Union
 
 import numpy as np
 import odc.stac
 import pystac_client
 import xarray
-from eo_insights.stac_utils import STACConfig
+
 from eo_insights.masking import (
-    set_mask_attributes,
-    convert_mask_to_bool,
-    apply_morph_operators,
     MaskFilter,
+    apply_morph_operators,
+    convert_mask_to_bool,
+    set_mask_attributes,
 )
+from eo_insights.stac_utils import STACConfig
+from eo_insights.utils import get_logger
 
 # Construct types for type hinting
 BBox = tuple[float, float, float, float]
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
-
-# Set up the logger
-_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -50,13 +48,20 @@ class LoadParams:
 class RasterBase:
     """Class for instantiating raster data"""
 
+    _log = None
+
     def __init__(
         self,
         data: Optional[xarray.Dataset] = None,
         masks: Optional[xarray.Dataset] = None,
+        log: Optional[logging.Logger] = None,
     ):
         self.data = data
         self.masks = masks
+        if log is not None:
+            self._log = log
+        else:
+            self._log = get_logger("raster base")
 
     @classmethod
     def from_stac_query(
@@ -70,6 +75,7 @@ class RasterBase:
         Specific factory method for building from stac query
         This returns a lazy-loaded xarray
         """
+        log = get_logger("raster base")
 
         # Connect to a stac catalog and return the client used to access
         catalog = pystac_client.Client.open(config.catalog.url)
@@ -102,11 +108,9 @@ class RasterBase:
         # Identify whether any of the masks are present in the loaded data
         requested_masks: list = []
         for requested_collection_name in collections:
-
             configured_masks = config.get_collection_masks(requested_collection_name)
 
             if len(configured_masks) > 0:
-
                 matched_masks = set(configured_masks.keys()).intersection(data.keys())
 
                 for mask in matched_masks:
@@ -115,7 +119,7 @@ class RasterBase:
                 requested_masks.extend(matched_masks)
 
             else:
-                _log.warning(
+                log.warning(
                     "There were no configured masks found for %s",
                     requested_collection_name,
                 )
@@ -127,9 +131,9 @@ class RasterBase:
             data = data.drop_vars(list(unique_masks))
         else:
             masks = None
-            _log.info("No masks were found for the requested collections")
+            log.info("No masks were found for the requested collections")
 
-        return cls(data, masks)
+        return cls(data, masks, log)
 
     def generate_boolean_mask(self, mask_name: str, inplace: bool = True) -> str:
         """
