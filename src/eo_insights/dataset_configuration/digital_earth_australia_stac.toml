@@ -148,6 +148,56 @@ flags_definition.bits = [0, 1, 2]
 "valid" = 1
 "cloud" = 2
 
+# List default metadata attributes for all assets 
+[collections.ga_s2cm_ard_3.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
+
+# Overwrite metadata for oa_fmask
+[collections.ga_s2cm_ard_3.assets.oa_fmask]
+data_type = "uint8"
+nodata = 0
+unit = "1"
+
+# Overwrite metadata for oa_s2cloudless_mask
+[collections.ga_s2cm_ard_3.assets.oa_s2cloudless_mask]
+data_type = "uint8"
+nodata = 0
+unit = "1"
+
+# Set up masks
+[collections.ga_s2cm_ard_3.masks]
+
+# Set up oa_fmask config
+[collections.ga_s2cm_ard_3.masks.oa_fmask]
+alias = "fmask"
+description = "Function of mask"
+type = "categorical"
+default_masking_settings = {"nodata" = true, "cloud"= true, "shadow"= true, "snow"= true, "water"= true}
+flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
+
+[collections.ga_s2cm_ard_3.masks.oa_fmask.flags_definition.values]
+"nodata" = 0
+"valid" = 1
+"cloud" = 2
+"shadow" = 3
+"snow" = 4
+"water" = 5
+
+# Set up oa_s2cloudless_mask config
+[collections.ga_s2cm_ard_3.masks.oa_s2cloudless_mask]
+alias = "s2cloudless"
+description = "S2 Cloudless Mask"
+type = "categorical"
+default_masking_settings = {"nodata" = true, "cloud" = true}
+flags_definition.bits = [0, 1, 2]
+
+[collections.ga_s2cm_ard_3.masks.oa_s2cloudless_mask.flags_definition.values]
+"nodata" = 0
+"valid" = 1
+"cloud" = 2
+
 # Collection
 [collections.ga_ls_wo_fq_cyear_3]
 description = "Geoscience Australia Landsat Water Observations Frequency Calendar Year Collection 3"
