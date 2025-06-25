@@ -4,18 +4,17 @@ Spatial tools
 Adapted from Digital Earth Australia Tools
 """
 
-from typing import Optional, Hashable, Union, Iterable, Tuple
+from typing import Hashable, Iterable, Optional, Tuple, Union
 
 import geopandas
 import numpy
-import odc.geo.xr
-from odc.geo.crs import CRS
-from odc.geo.geobox import GeoBox
 import rasterio
 import rasterio.features
 import shapely
 import shapely.geometry
 import xarray
+from odc.geo.geobox import GeoBox
+from odc.geo.xr import wrap_xr
 
 # Construct types for type hinting
 XarrayType = Union[xarray.Dataset, xarray.DataArray]
@@ -112,7 +111,6 @@ def _rasterio_rasterize(
     geobox: GeoBox,
     **rasterio_kwargs,
 ) -> numpy.ndarray:
-
     raster = rasterio.features.rasterize(
         shapes=shapes, out_shape=geobox.shape, transform=geobox.transform
     )
@@ -125,7 +123,6 @@ def xr_rasterize(
     da: XarrayType,
     attribute_name: Optional[Hashable] = None,
 ) -> xarray.DataArray:
-
     # Check if provided data array has a CRS
     if da.odc.crs is None:
         raise ValueError("data array does not have a coordinate reference system.")
@@ -141,7 +138,7 @@ def xr_rasterize(
     raster = _rasterio_rasterize(shapes=shapes, geobox=da.odc.geobox)
 
     # Convert to xarray
-    da_rasterized = odc.geo.xr.wrap_xr(im=raster, gbox=da.odc.geobox)
+    da_rasterized = wrap_xr(im=raster, gbox=da.odc.geobox)
     if attribute_name is not None:
         da_rasterized = da_rasterized.rename(attribute_name)
 

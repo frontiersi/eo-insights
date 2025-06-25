@@ -1,17 +1,15 @@
 """Construct a STAC config object"""
 
-import logging
-
-from dataclasses import dataclass
-from typing import Union, Any
 import pathlib
-import tomllib
+from dataclasses import dataclass
+from typing import Any, Union
+
 import numpy
+import tomllib
+
+from eo_insights.utils import get_logger
 
 PathType = Union[str, pathlib.Path]
-
-# Set up the logger
-_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -32,8 +30,8 @@ class MaskInfo:
     description: str
     collection: str
     mask_type: str
-    categories_to_mask: list[str]
-    flags_definition: dict[str, Any]
+    default_masking_settings: dict[str, Any]
+    flags_definition: dict[str, dict[str, Any]]
 
 
 def _get_mask_info(collection_id: str, mask_id: str, mask_config: dict) -> MaskInfo:
@@ -45,7 +43,7 @@ def _get_mask_info(collection_id: str, mask_id: str, mask_config: dict) -> MaskI
         description=mask_config.get("description", ""),
         collection=collection_id,
         mask_type=mask_config.get("type", ""),
-        categories_to_mask=mask_config.get("categories_to_mask", []),
+        default_masking_settings=mask_config.get("default_masking_settings", {}),
         flags_definition=mask_config.get("flags_definition", {}),
     )
 
@@ -90,8 +88,11 @@ def _get_collection_info(collection_id: str, collection_config: dict) -> Collect
 class STACConfig:
     """STAC config class"""
 
+    _log = None
+
     def __init__(self, configuration: dict[Any, Any]) -> None:
         self.configuration = configuration
+        self._log = get_logger("stac config")
 
     @classmethod
     def from_toml(cls, configuration_toml_path: PathType):
@@ -142,7 +143,7 @@ class STACConfig:
     def list_collections(self):
         """Display the collection information"""
         for collection_name, collection_info in self.collections.items():
-            _log.info("%s - %s", collection_name, collection_info.description)
+            self._log.info("%s - %s", collection_name, collection_info.description)
 
     def get_collection_masks(self, collection_id: str) -> dict[str, MaskInfo]:
         """Get a dictionary of alias: MaskInfo for all masks available in a collection"""
@@ -156,7 +157,7 @@ class STACConfig:
             }
         else:
             mask_aliases = {}
-            _log.error("No collection information was found for %s", collection_id)
+            self._log.error("No collection information was found for %s", collection_id)
 
         return mask_aliases
 

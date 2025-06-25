@@ -1,0 +1,103 @@
+# STAC Connection information
+[catalog]
+name = "NASA LPCLOUD"
+url = "https://cmr.earthdata.nasa.gov/cloudstac/LPCLOUD/"
+
+[catalog.rio_config]
+cloud_defaults = true
+# GDAL_HTTP_HEADER = "Authorization: Bearer {token}"
+# token must be supplied by user
+
+# Harmonized Landsat Sentinel-2 (HLS)
+
+# HLS Sentinel-2 Product Definition
+[collections."HLSS30.v2.0"]
+description = "HLS Sentinel-2 Multi-spectral Instrument Surface Reflectance Daily Global 30m v2.0"
+
+[collections."HLSS30.v2.0".aliases]
+costal_aerosol = "B01"
+blue = "B02"
+green = "B03"
+red = "B04"
+red_edge_1 = "B05"
+red_edge_2 = "B06"
+red_edge_3 = "B07"
+nir_broad = "B08"
+nir = "B8A"
+water_vapour = "B09"
+swir_1 = "B11"
+swir_2 = "B12"
+fmask = "Fmask"
+
+# List default metadata attributes for all assets
+[collections."HLSS30.v2.0".assets."*"]
+data_type = "int16"
+nodata = -999
+
+# Overwrite metadata for Fmask
+[collections."HLSS30.v2.0".assets.Fmask]
+data_type = "uint8"
+nodata = 255
+
+# Set up all HLSS30.v2.0 masks
+[collections."HLSS30.v2.0".masks]
+
+# Set up Fmask config
+[collections."HLSS30.v2.0".masks.Fmask]
+alias = "fmask"
+description = "Function of mask"
+type = "bitflags"
+default_masking_settings = {"cloud" = true, "adjacent to cloud/shadow" = true, "cloud shadow" = true}
+
+[collections."HLSS30.v2.0".masks.Fmask.flags_definition]
+"cirrus" = { bits = 0 }
+"cloud" = { bits = 1, values = { 0 = false, 1 = true } }
+"adjacent to cloud/shadow" = { bits = 2, values = {0 = false, 1 = true} }
+"cloud shadow" = { bits = 3, values = {0 = false, 1 = true} }
+"snow/ice" = { bits = 4, values = {0 = false, 1 = true} }
+"water" = { bits = 5, values = {0 = false, 1 = true} }
+"aerosol level" = { bits = [7, 6], values = {0 = "climatology aerosol", 1 = "low aerosol", 2 = "moderate aerosol", 3 = "high aerosol"} }
+
+
+# HLS Landsat Product Definition
+[collections."HLSL30.v2.0"]
+description = "HLS Landsat Operational Land Imager Surface Reflectance and TOA Brightness Daily Global 30m v2.0"
+
+[collections."HLSL30.v2.0".aliases]
+costal_aerosol = "B01"
+blue = "B02"
+green = "B03"
+red = "B04"
+nir = "B05"
+swir_1 = "B06"
+swir_2 = "B07"
+fmask = "Fmask"
+
+# List default metadata attributes for all assets
+[collections."HLSL30.v2.0".assets."*"]
+data_type = "int16"
+nodata = -999
+
+# Overwrite metadata for Fmask
+[collections."HLSL30.v2.0".assets.Fmask]
+data_type = "uint8"
+nodata = 255
+
+# Set up all HLSL30.v2.0 masks
+[collections."HLSL30.v2.0".masks]
+
+# Set up Fmask config
+[collections."HLSL30.v2.0".masks.Fmask]
+alias = "fmask"
+description = "Function of mask"
+type = "bitflags"
+default_masking_settings = {"cloud" = true, "adjacent to cloud/shadow" = true, "cloud shadow" = true}
+
+[collections."HLSL30.v2.0".masks.Fmask.flags_definition]
+"cirrus" = { bits = 0 }
+"cloud" = { bits = 1, values = { 0 = false, 1 = true } }
+"adjacent to cloud/shadow" = { bits = 2, values = {0 = false, 1 = true} }
+"cloud shadow" = { bits = 3, values = {0 = false, 1 = true} }
+"snow/ice" = { bits = 4, values = {0 = false, 1 = true} }
+"water" = { bits = 5, values = {0 = false, 1 = true} }
+"aerosol level" = { bits = [7, 6], values = {0 = "climatology aerosol", 1 = "low aerosol", 2 = "moderate aerosol", 3 = "high aerosol"} }
