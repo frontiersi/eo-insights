@@ -361,3 +361,64 @@ flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 "insufficient observations wet" = 0
 "insufficient observations dry" = 1
 "sufficient observations" = 2
+
+# Landsat 5 TM Product Definition
+[collections.ga_ls5t_ard_3]
+description = "Landsat 5 ARD"
+
+# band aliases 
+[collections.ga_ls5t_ard_3.aliases]
+blue = "nbart_blue"
+green = "nbart_green"
+red = "nbart_red"
+nir = "nbart_nir"
+swir_1 = "nbart_swir_1"
+swir_2 = "nbart_swir_2"
+fmask = "oa_fmask"
+
+# List default metadata attributes for all assets
+[collections.ga_ls5t_ard_3.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
+
+# Overwrite metadata for oa_fmask
+[collections.ga_ls5t_ard_3.assets.oa_fmask]
+data_type = "uint8"
+nodata = 0
+unit = "1"
+
+# Set up all ga_ls5t_ard_3 masks
+[collections.gga_ls5t_ard_3.masks]
+
+# Set up oa_fmask config
+[collections.ga_ls5t_ard_3.masks.oa_fmask]
+alias = "fmask"
+description = "Function of mask"
+type = "categorical"
+default_masking_settings = {"nodata" = true, "cloud"= true, "shadow"= true, "snow"= true, "water"= true}
+flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
+
+[collections.ga_ls5t_ard_3.masks.oa_fmask.flags_definition.values]
+"nodata" = 0
+"valid" = 1
+"cloud" = 2
+"shadow" = 3
+"snow" = 4
+"water" = 5
+
+ # - WIP - #
+ 
+# Landsat 7 TM Product Definition
+[collections.ga_ls7e_ard_3]
+description = "Landsat 7 ARD"
+
+
+# Landsat 8 Product Definition
+[collections.gga_ls8c_ard_3]
+description = "Landsat 8 ARD"
+
+
+# Landsat 9 Product Definition
+[collections.ga_ls9c_ard_3]
+description = "Landsat 9 ARD"
