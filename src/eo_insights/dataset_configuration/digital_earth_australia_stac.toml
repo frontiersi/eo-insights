@@ -8,7 +8,7 @@ cloud_defaults = true
 aws = { aws_unsigned = true }
 AWS_S3_ENDPOINT = "s3.ap-southeast-2.amazonaws.com"
 
-# Baseline satellite data 
+# ------ Baseline satellite data ------ #
 
 # Sentinel-2a Product Definition
 [collections.ga_s2am_ard_3]
@@ -525,7 +525,7 @@ data_type = "float32"
 nodata = NaN
 unit = "1"
 
-# Inland Water
+# ------ Inland Water ------ #
 
 # Collection
 [collections.ga_ls_wo_fq_cyear_3]
@@ -571,7 +571,7 @@ data_type = "float32"
 nodata = "NaN"
 unit = "1"
 
-# Land & Vegetation
+# ------ Land & Vegetation ------ #
 
 # Sentinel-2 Barest Earth Product Definition
 [collections.s2_barest_earth]
