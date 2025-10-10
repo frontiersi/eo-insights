@@ -430,19 +430,19 @@ unit = "1"
 # Overwrite metadata for sdev - Cosine (spectral) distance
 [collections.ga_ls5t_gm_cyear_3.assets.sdev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Overwrite metadata for edev - Euclidean distance
 [collections.ga_ls5t_gm_cyear_3.assets.edev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Overwrite metadata for bcdev - Bray Curtis dissimilarity
 [collections.ga_ls5t_gm_cyear_3.assets.bcdev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Landsat-7 yearly geomedian Product Definition
@@ -470,19 +470,19 @@ unit = "1"
 # Overwrite metadata for sdev - Cosine (spectral) distance
 [collections.ga_ls7e_gm_cyear_3.assets.sdev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Overwrite metadata for edev - Euclidean distance
 [collections.ga_ls7e_gm_cyear_3.assets.edev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Overwrite metadata for bcdev - Bray Curtis dissimilarity
 [collections.ga_ls7e_gm_cyear_3.assets.bcdev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Landsat-8-9 yearly geomedian Product Definition
@@ -510,19 +510,19 @@ unit = "1"
 # Overwrite metadata for sdev - Cosine (spectral) distance
 [collections.ga_ls8cls9c_gm_cyear_3.assets.sdev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Overwrite metadata for edev - Euclidean distance
 [collections.ga_ls8cls9c_gm_cyear_3.assets.edev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # Overwrite metadata for bcdev - Bray Curtis dissimilarity
 [collections.ga_ls8cls9c_gm_cyear_3.assets.bcdev]
 data_type = "float32"
-nodata = NaN
+nodata = "NaN"
 unit = "1"
 
 # ------ Inland Water ------ #
