@@ -247,7 +247,7 @@ nodata = 0
 unit = "1"
 
 # Set up all ga_ls5t_ard_3 masks
-[collections.gga_ls5t_ard_3.masks]
+[collections.ga_ls5t_ard_3.masks]
 
 # Set up oa_fmask config
 [collections.ga_ls5t_ard_3.masks.oa_fmask]
