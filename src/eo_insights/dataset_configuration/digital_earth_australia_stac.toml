@@ -10,13 +10,13 @@ AWS_S3_ENDPOINT = "s3.ap-southeast-2.amazonaws.com"
 
 # ------ Baseline satellite data ------ #
 
-# Sentinel-2a Product Definition
+# Sentinel-2A Product Definition
 [collections.ga_s2am_ard_3]
-description = "Sentinel-2a"
+description = "Sentinel-2A"
 
 # band aliases 
 [collections.ga_s2am_ard_3.aliases]
-costal_aerosol = "nbart_coastal_aerosol"
+coastal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
 red = "nbart_red"
@@ -80,13 +80,13 @@ flags_definition.bits = [0, 1, 2]
 "valid" = 1
 "cloud" = 2
 
-# Sentinel-2b Product Definition
+# Sentinel-2B Product Definition
 [collections.ga_s2bm_ard_3]
-description = "Sentinel-2b"
+description = "Sentinel-2B"
 
 # Band aliases
 [collections.ga_s2bm_ard_3.aliases]
-costal_aerosol = "nbart_coastal_aerosol"
+coastal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
 red = "nbart_red"
@@ -150,13 +150,13 @@ flags_definition.bits = [0, 1, 2]
 "valid" = 1
 "cloud" = 2
 
-# Sentinel-2c Product Definition
+# Sentinel-2C Product Definition
 [collections.ga_s2cm_ard_3]
-description = "Sentinel-2c"
+description = "Sentinel-2C"
 
 # Band aliases
 [collections.ga_s2cm_ard_3.aliases]
-costal_aerosol = "nbart_coastal_aerosol"
+coastal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
 red = "nbart_red"
@@ -317,7 +317,7 @@ description = "Landsat 8 ARD"
 
 # band aliases 
 [collections.ga_ls8c_ard_3.aliases]
-costal_aerosol = "nbart_coastal_aerosol"
+coastal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
 red = "nbart_red"
@@ -364,7 +364,7 @@ description = "Landsat 9 ARD"
 
 # band aliases 
 [collections.ga_ls9c_ard_3.aliases]
-costal_aerosol = "nbart_coastal_aerosol"
+coastal_aerosol = "nbart_coastal_aerosol"
 blue = "nbart_blue"
 green = "nbart_green"
 red = "nbart_red"
