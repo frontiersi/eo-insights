@@ -526,6 +526,41 @@ unit = "1"
 
 # ------ Inland Water ------ #
 
+# Landsat Water Observations Product Definition
+[collections.ga_ls_wo_3]
+description = "Geoscience Australia Landsat Water Observations Collection 3"
+
+# band aliases 
+[collections.ga_ls_wo_3.aliases]
+water = "water"
+
+# List default metadata attributes for all assets
+[collections.ga_ls_wo_3.assets."*"]
+data_type = "uint8"
+nodata = 1
+unit = "1"
+
+# Set up Water Observations mask
+[collections.ga_ls_wo_3.masks]
+
+# Set up Water Observations bit flags
+[collections.ga_ls_wo_3.masks.water]
+alias = "water"
+description = "Water Classification"
+type = "bitflags"
+default_masking_settings = {"wet" = true}
+
+[collections.ga_ls_wo_3.masks.water.flags_definition]
+"nodata" = { bits = 0, values = { 0 = false, 1 = true } }
+"noncontiguous" = { bits = 1, values = { 0 = false, 1 = true } }
+"low_solar_angle" = { bits = 2, values = {0 = false, 1 = true} }
+"terrain_shadow" = { bits = 3, values = {0 = false, 1 = true} }
+"high_slope" = { bits = 4, values = {0 = false, 1 = true} }
+"cloud_shadow" = { bits = 5, values = {0 = false, 1 = true} }
+"cloud" = { bits = 6, values = {0 = false, 1 = true} }
+"dry" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
+"wet" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {128 = true} }
+
 # Collection
 [collections.ga_ls_wo_fq_cyear_3]
 description = "Geoscience Australia Landsat Water Observations Frequency Calendar Year Collection 3"
@@ -570,6 +605,42 @@ data_type = "float32"
 nodata = "NaN"
 unit = "1"
 
+# Sentinel-2 Water Observations Product Definition
+[collections.ga_s2_wo_provisional_3]
+description = "Geoscience Australia Sentinel 2 Near Real Time Water Observations Provisional Collection 3"
+
+# band aliases 
+[collections.ga_s2_wo_provisional_3.aliases]
+water = "water"
+
+# List default metadata attributes for all assets
+[collections.ga_s2_wo_provisional_3.assets."*"]
+data_type = "uint8"
+nodata = 1
+unit = "1"
+
+# Set up Water Observations mask
+[collections.ga_s2_wo_provisional_3.masks]
+
+# Set up Water Observations bit flags
+[collections.ga_s2_wo_provisional_3.masks.water]
+alias = "water"
+description = "Water Classification"
+type = "bitflags"
+default_masking_settings = {"wet" = true}
+
+[collections.ga_s2_wo_provisional_3.masks.water.flags_definition]
+"nodata" = { bits = 0, values = { 0 = false, 1 = true } }
+"noncontiguous" = { bits = 1, values = { 0 = false, 1 = true } }
+"low_solar_angle" = { bits = 2, values = {0 = false, 1 = true} }
+"terrain_shadow" = { bits = 3, values = {0 = false, 1 = true} }
+"high_slope" = { bits = 4, values = {0 = false, 1 = true} }
+"cloud_shadow" = { bits = 5, values = {0 = false, 1 = true} }
+"cloud" = { bits = 6, values = {0 = false, 1 = true} }
+"dry" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
+"wet" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {128 = true} }
+
+
 # ------ Land & Vegetation ------ #
 
 # Sentinel-2 Barest Earth Product Definition
@@ -594,6 +665,67 @@ nir = "s2be_nir_1"
 nir_2 = "s2be_nir_2"
 swir_1 = "s2be_swir_2"
 swir_2 = "s2be_swir_3"
+
+# Landsat Barest Earth Product Definition
+[collections.landsat_barest_earth]
+description = "Landsat 30+ Barest Earth"
+
+# List metadata attributes for spectral bands
+[collections.landsat_barest_earth.assets."*"]
+data_type = "int16"
+nodata = -999
+unit = "1"
+
+# Band aliases
+[collections.landsat_barest_earth.aliases]
+blue = "blue"
+green = "green"
+red = "red"
+nir = "nir"
+swir_1 = "swir1"
+swir_2 = "swir2"
+
+
+### ----- WIP ----- ###
+
+# Landsat Mangrove Cover Product Definition
+[collections.ga_ls_mangrove_cover_cyear_3]
+description = "Geoscience Australia Landsat Mangrove Cover Calendar Year Collection 3"
+
+# band alias
+[collections.ga_ls_mangrove_cover_cyear_3.aliases]
+canopy_cover_class = "canopy_cover_class"
+
+# List metadata attributes for all assests
+[collections.ga_ls_mangrove_cover_cyear_3.assets."*"]
+data_type = "uint8"
+nodata = 255
+unit = 1
+
+# Set up Mangrove mask
+[collections.ga_ls_mangrove_cover_cyear_3.masks]
+
+
+
+# Set up Mangrove Cover bit flags
+[collections.ga_ls_mangrove_cover_cyear_3.masks.canopy_cover_class]
+alias = "canopy_cover_class"
+description = "Canopy Cover Class"
+type = "bitflags"
+default_masking_settings = {"wet" = true}
+
+[collections.ga_s2_wo_provisional_3.masks.water.flags_definition]
+"nodata" = { bits = 0, values = { 0 = false, 1 = true } }
+"noncontiguous" = { bits = 1, values = { 0 = false, 1 = true } }
+"low_solar_angle" = { bits = 2, values = {0 = false, 1 = true} }
+"terrain_shadow" = { bits = 3, values = {0 = false, 1 = true} }
+"high_slope" = { bits = 4, values = {0 = false, 1 = true} }
+"cloud_shadow" = { bits = 5, values = {0 = false, 1 = true} }
+"cloud" = { bits = 6, values = {0 = false, 1 = true} }
+"dry" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
+"wet" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {128 = true} }
+
+### ----- WIP ----- ###
 
 # SRTM DEM product Definition
 [collections.ga_srtm_dem1sv1_0]
@@ -641,41 +773,6 @@ err = "ue"
 data_type = "uint8"
 nodata = 255
 unit = "percent"
-
-# Landsat Water Observations Product Definition
-[collections.ga_ls_wo_3]
-description = "Geoscience Australia Landsat Water Observations Collection 3"
-
-# band aliases 
-[collections.ga_ls_wo_3.aliases]
-water = "water"
-
-# List default metadata attributes for all assets
-[collections.ga_ls_wo_3.assets."*"]
-data_type = "uint8"
-nodata = 1
-unit = "1"
-
-# Set up Water Observations mask
-[collections.ga_ls_wo_3.masks]
-
-# Set up Water Observations bit flags
-[collections.ga_ls_wo_3.masks.water]
-alias = "water"
-description = "Water Classification"
-type = "bitflags"
-default_masking_settings = {"wet" = true}
-
-[collections.ga_ls_wo_3.masks.water.flags_definition]
-"nodata" = { bits = 0, values = { 0 = false, 1 = true } }
-"noncontiguous" = { bits = 1, values = { 0 = false, 1 = true } }
-"low_solar_angle" = { bits = 2, values = {0 = false, 1 = true} }
-"terrain_shadow" = { bits = 3, values = {0 = false, 1 = true} }
-"high_slope" = { bits = 4, values = {0 = false, 1 = true} }
-"cloud_shadow" = { bits = 5, values = {0 = false, 1 = true} }
-"cloud" = { bits = 6, values = {0 = false, 1 = true} }
-"dry" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
-"wet" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {128 = true} }
 
 # Landsat Fractional Cover Percentiles Product Definition
 [collections.ga_ls_fc_pc_cyear_3]
