@@ -264,7 +264,6 @@ flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 "shadow" = 3
 "snow" = 4
 "water" = 5
- 
 # Landsat 7 TM Analysis Ready Data Product Definition
 [collections.ga_ls7e_ard_3]
 description = "Landsat 7 ARD"
