@@ -807,9 +807,31 @@ flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 "insufficient observations dry" = 1
 "sufficient observations" = 2
 
-# Landsat Land Cover 3.0 Product Description
+# Landsat Land Cover 3.0 Product Description  ### NEED TO TEST ###
 [collections.ga_ls_landcover_class_cyear_3]
 description = "Geoscience Australia Landsat Land Cover Calendar Year Collection 3.0"
+
+# band aliases
+[collections.ga_ls_landcover_class_cyear_3.aliases]
+level3 = "level3"
+level4 = "level4"
+
+# List default metadata attributes for all assets
+[collections.ga_ls_landcover_class_cyear_3.assets."*"]
+data_type = "uint8"
+nodata = 255
+unit = "1"
+
+# Level 3 Class values ### CHECK THIS ###
+[collections.ga_ls_landcover_class_cyear_3.assets.level3.values]
+"Cultivated terrestrial vegetation" = 111
+"Natural terrestrial vegetation" = 112
+"Natural aquatic vegetation" = 124
+"Artificial surface" = 215
+"Natural bare surface" = 216
+"Water" = 220
+"No Data" = 255
+
 
 ### TO BE COMPLETED
 
@@ -826,6 +848,37 @@ description = "Geoscience Australia Landsat Land Cover Calendar Year Collection 
 # ------ Hazards ------ #
 
 # Sentinel 2 Burnt Area Collection Description
-[Collection.ga_s2_ba_provisional_3]
+[collections.ga_s2_ba_provisional_3]
 description = "Sentinel 2 Burnt Area Collection 3 (Provisional)"
 
+# band aliases 
+[collections.ga_s2_ba_provisional_3.aliases]
+delta_nbr = "delta_nbr"
+delta_ndvi = "delta_ndvi"
+delta_bsi = "delta_bsi"
+fmask = "fmask"
+
+# List default metadata attributes for all assets
+[collections.ga_s2_ba_provisional_3.assets."*"]
+data_type = "float32"
+nodata = "NaN"
+unit = "1"
+
+# Set up all ga_s2_ba_provisional_3 masks ### NEED TO CHECK IF THE FOLLOWING IS CORRECT ###
+[collections.ga_s2_ba_provisional_3.masks]
+
+# Set up fmask config
+[collections.ga_s2_ba_provisional_3.masks.fmask]
+alias = "fmask"
+description = "Function of mask"
+type = "categorical"
+default_masking_settings = {"nodata" = true, "cloud"= true, "shadow"= true, "snow"= true, "water"= true}
+flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
+
+[collections.ga_s2_ba_provisional_3.masks.fmask.flags_definition.values]
+"nodata" = 0
+"valid" = 1
+"cloud" = 2
+"shadow" = 3
+"snow" = 4
+"water" = 5
