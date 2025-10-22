@@ -685,9 +685,6 @@ nir = "nir"
 swir_1 = "swir1"
 swir_2 = "swir2"
 
-
-### ----- WIP ----- ###
-
 # Landsat Mangrove Cover Product Definition
 [collections.ga_ls_mangrove_cover_cyear_3]
 description = "Geoscience Australia Landsat Mangrove Cover Calendar Year Collection 3"
@@ -705,27 +702,18 @@ unit = 1
 # Set up Mangrove mask
 [collections.ga_ls_mangrove_cover_cyear_3.masks]
 
-
-
 # Set up Mangrove Cover bit flags
 [collections.ga_ls_mangrove_cover_cyear_3.masks.canopy_cover_class]
 alias = "canopy_cover_class"
 description = "Canopy Cover Class"
 type = "bitflags"
-default_masking_settings = {"wet" = true}
+# default_masking_settings = {"wet" = true} # not sure if this is needed
 
 [collections.ga_s2_wo_provisional_3.masks.water.flags_definition]
-"nodata" = { bits = 0, values = { 0 = false, 1 = true } }
-"noncontiguous" = { bits = 1, values = { 0 = false, 1 = true } }
-"low_solar_angle" = { bits = 2, values = {0 = false, 1 = true} }
-"terrain_shadow" = { bits = 3, values = {0 = false, 1 = true} }
-"high_slope" = { bits = 4, values = {0 = false, 1 = true} }
-"cloud_shadow" = { bits = 5, values = {0 = false, 1 = true} }
-"cloud" = { bits = 6, values = {0 = false, 1 = true} }
-"dry" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
-"wet" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {128 = true} }
-
-### ----- WIP ----- ###
+"notobserved" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
+"woodland" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {1 = true} }
+"open_forest" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {2 = true} }
+"closed_forest" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {3 = true} }
 
 # SRTM DEM product Definition
 [collections.ga_srtm_dem1sv1_0]
@@ -818,3 +806,26 @@ flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 "insufficient observations wet" = 0
 "insufficient observations dry" = 1
 "sufficient observations" = 2
+
+# Landsat Land Cover 3.0 Product Description
+[collections.ga_ls_landcover_class_cyear_3]
+description = "Geoscience Australia Landsat Land Cover Calendar Year Collection 3.0"
+
+### TO BE COMPLETED
+
+# ------ Sea, ocean and coast ------ #
+
+# Sentinel-2 Landsat Intertidal Calendar Year Product Description
+
+# Sentinel-2 Tidal Composites Calendar Year Product Description
+
+# Coastline data for Australia Product Description
+
+# National Intertidal Digital Elevation Model 25m 1.0.0 Product Description
+
+# ------ Hazards ------ #
+
+# Sentinel 2 Burnt Area Collection Description
+[Collection.ga_s2_ba_provisional_3]
+description = "Sentinel 2 Burnt Area Collection 3 (Provisional)"
+
