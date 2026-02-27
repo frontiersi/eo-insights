@@ -697,7 +697,7 @@ canopy_cover_class = "canopy_cover_class"
 [collections.ga_ls_mangrove_cover_cyear_3.assets."*"]
 data_type = "uint8"
 nodata = 255
-unit = 1
+unit = "1"
 
 # Set up Mangrove mask
 [collections.ga_ls_mangrove_cover_cyear_3.masks]
@@ -709,7 +709,7 @@ description = "Canopy Cover Class"
 type = "bitflags"
 # default_masking_settings = {"wet" = true} # not sure if this is needed
 
-[collections.ga_s2_wo_provisional_3.masks.water.flags_definition]
+[collections.ga_ls_mangrove_cover_cyear_3.masks.canopy_cover_class.flags_definition]
 "notobserved" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {0 = true} }
 "woodland" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {1 = true} }
 "open_forest" = { bits = [7, 6, 5, 4, 3, 2, 1, 0], values = {2 = true} }
@@ -807,7 +807,7 @@ flags_definition.bits = [0, 1, 2, 3, 4, 5, 6, 7]
 "insufficient observations dry" = 1
 "sufficient observations" = 2
 
-# Landsat Land Cover 3.0 Product Description  ### NEED TO TEST ###
+# Landsat Land Cover 3.0 Product Description
 [collections.ga_ls_landcover_class_cyear_3]
 description = "Geoscience Australia Landsat Land Cover Calendar Year Collection 3.0"
 
@@ -822,7 +822,7 @@ data_type = "uint8"
 nodata = 255
 unit = "1"
 
-# Level 3 Class values ### CHECK THIS ###
+# Level 3 Class values
 [collections.ga_ls_landcover_class_cyear_3.assets.level3.values]
 "Cultivated terrestrial vegetation" = 111
 "Natural terrestrial vegetation" = 112
@@ -832,10 +832,97 @@ unit = "1"
 "Water" = 220
 "No Data" = 255
 
+# Level 4 Class values
+[collections.ga_ls_landcover_class_cyear_3.assets.level4.values]
+"Cultivated Terrestrial Vegetated" = 1
+"Cultivated Terrestrial Vegetated: Woody" = 2
+"Cultivated Terrestrial Vegetated: Herbaceous" = 3
+"Cultivated Terrestrial Vegetated: Closed (> 65 %)" = 4
+"Cultivated Terrestrial Vegetated: Open (40 to 65 %)" = 5
+"Cultivated Terrestrial Vegetated: Open (15 to 40 %)" = 6
+"Cultivated Terrestrial Vegetated: Sparse (4 to 15 %)" = 7
+"Cultivated Terrestrial Vegetated: Scattered (1 to 4 %)" = 8
+"Cultivated Terrestrial Vegetated: Woody Closed (> 65 %)" = 9
+"Cultivated Terrestrial Vegetated: Woody Open (40 to 65 %)" = 10
+"Cultivated Terrestrial Vegetated: Woody Open (15 to 40 %)" = 11
+"Cultivated Terrestrial Vegetated: Woody Sparse (4 to 15 %)" = 12
+"Cultivated Terrestrial Vegetated: Woody Scattered (1 to 4 %)" = 13
+"Cultivated Terrestrial Vegetated: Herbaceous Closed (> 65 %)" = 14
+"Cultivated Terrestrial Vegetated: Herbaceous Open (40 to 65 %)" = 15
+"Cultivated Terrestrial Vegetated: Herbaceous Open (15 to 40 %)" = 16
+"Cultivated Terrestrial Vegetated: Herbaceous Sparse (4 to 15 %)" = 17
+"Cultivated Terrestrial Vegetated: Herbaceous Scattered (1 to 4 %)" = 18
+"Natural Terrestrial Vegetated" = 19
+"Natural Terrestrial Vegetated: Woody" = 20
+"Natural Terrestrial Vegetated: Herbaceous" = 21
+"Natural Terrestrial Vegetated: Closed (> 65 %)" = 22
+"Natural Terrestrial Vegetated: Open (40 to 65 %)" = 23
+"Natural Terrestrial Vegetated: Open (15 to 40 %)" = 24
+"Natural Terrestrial Vegetated: Sparse (4 to 15 %)" = 25
+"Natural Terrestrial Vegetated: Scattered (1 to 4 %)" = 26
+"Natural Terrestrial Vegetated: Woody Closed (> 65 %)" = 27
+"Natural Terrestrial Vegetated: Woody Open (40 to 65 %)" = 28
+"Natural Terrestrial Vegetated: Woody Open (15 to 40 %)" = 29
+"Natural Terrestrial Vegetated: Woody Sparse (4 to 15 %)" = 30
+"Natural Terrestrial Vegetated: Woody Scattered (1 to 4 %)" = 31
+"Natural Terrestrial Vegetated: Herbaceous Closed (> 65 %)" = 32
+"Natural Terrestrial Vegetated: Herbaceous Open (40 to 65 %)" = 33
+"Natural Terrestrial Vegetated: Herbaceous Open (15 to 40 %)" = 34
+"Natural Terrestrial Vegetated: Herbaceous Sparse (4 to 15 %)" = 35
+"Natural Terrestrial Vegetated: Herbaceous Scattered (1 to 4 %)" = 36
+"Natural Aquatic Vegetated" = 55
+"Natural Aquatic Vegetated: Woody" = 56
+"Natural Aquatic Vegetated: Herbaceous" = 57
+"Natural Aquatic Vegetated: Closed (> 65 %)" = 58
+"Natural Aquatic Vegetated: Open (40 to 65 %)" = 59
+"Natural Aquatic Vegetated: Open (15 to 40 %)" = 60
+"Natural Aquatic Vegetated: Sparse (4 to 15 %)" = 61
+"Natural Aquatic Vegetated: Scattered (1 to 4 %)" = 62
+"Natural Aquatic Vegetated: Woody Closed (> 65 %)" = 63
+"Natural Aquatic Vegetated: Woody Closed (> 65 %) Water > 3 months (semi-) permanent" = 64
+"Natural Aquatic Vegetated: Woody Closed (> 65 %) Water < 3 months (temporary or seasonal)" = 65
+"Natural Aquatic Vegetated: Woody Open (40 to 65 %)" = 66
+"Natural Aquatic Vegetated: Woody Open (40 to 65 %) Water > 3 months (semi-) permanent" = 67
+"Natural Aquatic Vegetated: Woody Open (40 to 65 %) Water < 3 months (temporary or seasonal)" = 68
+"Natural Aquatic Vegetated: Woody Open (15 to 40 %)" = 69
+"Natural Aquatic Vegetated: Woody Open (15 to 40 %) Water > 3 months (semi-) permanent" = 70
+"Natural Aquatic Vegetated: Woody Open (15 to 40 %) Water < 3 months (temporary or seasonal)" = 71
+"Natural Aquatic Vegetated: Woody Sparse (4 to 15 %)" = 72
+"Natural Aquatic Vegetated: Woody Sparse (4 to 15 %) Water > 3 months (semi-) permanent" = 73
+"Natural Aquatic Vegetated: Woody Sparse (4 to 15 %) Water < 3 months (temporary or seasonal)" = 74
+"Natural Aquatic Vegetated: Woody Scattered (1 to 4 %)" = 75
+"Natural Aquatic Vegetated: Woody Scattered (1 to 4 %) Water > 3 months (semi-) permanent" = 76
+"Natural Aquatic Vegetated: Woody Scattered (1 to 4 %) Water < 3 months (temporary or seasonal)" = 77
+"Natural Aquatic Vegetated: Herbaceous Closed (> 65 %)" = 78
+"Natural Aquatic Vegetated: Herbaceous Closed (> 65 %) Water > 3 months (semi-) permanent" = 79
+"Natural Aquatic Vegetated: Herbaceous Closed (> 65 %) Water < 3 months (temporary or seasonal)" = 80
+"Natural Aquatic Vegetated: Herbaceous Open (40 to 65 %)" = 81
+"Natural Aquatic Vegetated: Herbaceous Open (40 to 65 %) Water > 3 months (semi-) permanent" = 82
+"Natural Aquatic Vegetated: Herbaceous Open (40 to 65 %) Water < 3 months (temporary or seasonal)" = 83
+"Natural Aquatic Vegetated: Herbaceous Open (15 to 40 %)" = 84
+"Natural Aquatic Vegetated: Herbaceous Open (15 to 40 %) Water > 3 months (semi-) permanent" = 85
+"Natural Aquatic Vegetated: Herbaceous Open (15 to 40 %) Water < 3 months (temporary or seasonal)" = 86
+"Natural Aquatic Vegetated: Herbaceous Sparse (4 to 15 %)" = 87
+"Natural Aquatic Vegetated: Herbaceous Sparse (4 to 15 %) Water > 3 months (semi-) permanent" = 88
+"Natural Aquatic Vegetated: Herbaceous Sparse (4 to 15 %) Water < 3 months (temporary or seasonal)" = 89
+"Natural Aquatic Vegetated: Herbaceous Scattered (1 to 4 %)" = 90
+"Natural Aquatic Vegetated: Herbaceous Scattered (1 to 4 %) Water > 3 months (semi-) permanent" = 91
+"Natural Aquatic Vegetated: Herbaceous Scattered (1 to 4 %) Water < 3 months (temporary or seasonal)" = 92
+"Artificial Surface" = 93
+"Natural Surface" = 94
+"Natural Surface: Sparsely vegetated" = 95
+"Natural Surface: Very sparsely vegetated" = 96
+"Natural Surface: Bare areas, unvegetated" = 97
+"Water" = 98
+"Water: (Water)" = 99
+"Water: (Water) Tidal area" = 100
+"Water: (Water) Perennial (> 9 months)" = 101
+"Water: (Water) Non-perennial (7 to 9 months)" = 102
+"Water: (Water) Non-perennial (4 to 6 months)" = 103
+"Water: (Water) Non-perennial (1 to 3 months)" = 104
+"No data" = 255
 
-### TO BE COMPLETED
-
-# ------ Sea, ocean and coast ------ #
+# ------ Sea, ocean and coast ------ # PRODUCTS TO BE ADDEDED
 
 # Sentinel-2 Landsat Intertidal Calendar Year Product Description
 
